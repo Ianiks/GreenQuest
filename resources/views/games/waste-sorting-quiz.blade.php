@@ -708,7 +708,7 @@
                 progressText.textContent = `Question ${index + 1} of ${currentQuestions.length}`;
                 
                 // Reset and start timer
-                timeLeft = 15;
+                timeLeft = 20;
                 timeLeftElement.textContent = timeLeft;
                 timerElement.classList.remove('warning', 'danger');
                 startTimer();

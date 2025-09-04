@@ -87,6 +87,59 @@
             font-size: 1.8rem;
         }
         
+        .level-stages {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .level-stage {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            background-color: #e8f5e9;
+            color: var(--primary);
+            border: 2px solid var(--primary-light);
+            transition: all 0.3s ease;
+        }
+        
+        .level-stage.active {
+            background-color: var(--primary);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(46, 125, 50, 0.2);
+        }
+        
+        .level-stage.completed {
+            background-color: var(--secondary);
+            color: var(--text-dark);
+            border-color: var(--secondary);
+        }
+        
+        .level-stage.locked {
+            background-color: #f5f5f5;
+            color: var(--locked);
+            border-color: var(--locked);
+            cursor: not-allowed;
+            position: relative;
+        }
+        
+        .level-stage.locked::after {
+            content: '\f023';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            font-size: 12px;
+            bottom: -5px;
+            right: -5px;
+        }
+        
         .difficulty-selector {
             display: flex;
             justify-content: center;
@@ -108,38 +161,10 @@
             color: #2e7d32;
         }
         
-        .difficulty-btn.moderate {
-            background-color: #fff3e0;
-            color: #f57c00;
-        }
-        
-        .difficulty-btn.difficult {
-            background-color: #ffebee;
-            color: #d32f2f;
-        }
-        
         .difficulty-btn.active {
             border-color: currentColor;
             transform: scale(1.05);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .difficulty-btn.locked {
-            background-color: #f5f5f5;
-            color: #9e9e9e;
-            cursor: not-allowed;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .difficulty-btn.locked::after {
-            content: '\f023';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
         }
         
         .progress-container {
@@ -398,6 +423,16 @@
                 top: auto;
             }
             
+            .level-stages {
+                gap: 0.3rem;
+            }
+            
+            .level-stage {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
+            
             .difficulty-selector {
                 flex-wrap: wrap;
             }
@@ -425,12 +460,12 @@
         </a>
             <h1>Eco-Trivia Challenge</h1>
             
+            <div class="level-stages" id="levelStages">
+                <!-- Level stages 1-10 will be dynamically inserted here -->
+            </div>
+            
             <div class="difficulty-selector">
                 <div class="difficulty-btn easy active" data-difficulty="easy">Easy</div>
-                <div class="difficulty-btn moderate locked" data-difficulty="moderate">
-                    Moderate
-                </div>
-                <div class="difficulty-btn difficult locked" data-difficulty="difficult">Difficult</div>
             </div>
             
             <div class="progress-container">
@@ -443,7 +478,7 @@
             <div class="timer-container">
                 <div class="timer" id="timer">
                     <i class="fas fa-clock"></i>
-                    <span id="timeLeft">10</span> seconds
+                    <span id="timeLeft">20</span> seconds
                 </div>
                 <div class="score-display" id="scoreDisplay">Score: 0</div>
             </div>
@@ -451,6 +486,7 @@
 
         <form id="triviaForm">
             <input type="hidden" name="difficulty" value="easy" id="difficultyInput">
+            <input type="hidden" id="currentLevel" value="1">
             
             <div id="questionsContainer">
                 <!-- Questions will be dynamically inserted here -->
@@ -461,20 +497,18 @@
         <div class="completion-message d-none" id="completionScreen">
             <i class="fas fa-trophy"></i>
             <h2>Congratulations!</h2>
-            <p>You've completed the Easy level of Eco-Trivia!</p>
+            <p>You've completed Level <span id="completedLevel">1</span> of Eco-Trivia!</p>
             
             <div class="points-earned">
                 <i class="fas fa-coins"></i> 
-                <span>You got <span id="pointsEarned">0</span> Scores!</span>
+                <span>You got <span id="pointsEarned">0</span> out of 10 points!</span>
             </div>
             
             <div class="completion-buttons">
-                <button class="btn d-none" id="continueButton">
-                    Continue to Moderate Level <i class="fas fa-arrow-right"></i>
+                <button type="button" class="btn" id="nextLevelButton">
+                    Next Level <i class="fas fa-arrow-right"></i>
                 </button>
-                
-              
-                <button class="btn" id="restartButton" style="background-color: #f0f0f0; color: #333;">
+                <button type="button" class="btn" id="restartButton" style="background-color: #f0f0f0; color: #333;">
                     <i class="fas fa-redo"></i> Play Again
                 </button>
             </div>
@@ -484,124 +518,314 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Question bank with 15 questions (10 will be randomly selected)
-            const questionBank = [
-                {
-                    question: "What is the most effective way to reduce your carbon footprint?",
-                    options: ["Using public transportation", "Planting trees", "Reducing meat consumption", "Using energy-efficient lightbulbs"],
-                    correct: 2
-                },
-                {
-                    question: "Which of the following materials takes the longest to decompose?",
-                    options: ["Paper", "Plastic bottles", "Banana peels", "Cotton cloth"],
-                    correct: 1
-                },
-                {
-                    question: "What is the main cause of ocean acidification?",
-                    options: ["Plastic pollution", "Oil spills", "Excess carbon dioxide absorption", "Sewage runoff"],
-                    correct: 2
-                },
-                {
-                    question: "Which renewable energy source is the most widely used worldwide?",
-                    options: ["Solar power", "Wind power", "Hydroelectric power", "Geothermal energy"],
-                    correct: 2
-                },
-                {
-                    question: "What is the 'Great Pacific Garbage Patch' primarily composed of?",
-                    options: ["Industrial waste", "Microplastics", "Discarded fishing gear", "Glass bottles"],
-                    correct: 1
-                },
-                {
-                    question: "Which of these actions saves the most water?",
-                    options: ["Taking shorter showers", "Fixing leaky faucets", "Installing low-flow toilets", "Using a broom instead of a hose to clean driveways"],
-                    correct: 1
-                },
-                {
-                    question: "What is the leading cause of deforestation worldwide?",
-                    options: ["Urban expansion", "Agriculture", "Logging for timber", "Mining operations"],
-                    correct: 1
-                },
-                {
-                    question: "Which gas is primarily responsible for global warming?",
-                    options: ["Oxygen", "Nitrogen", "Carbon dioxide", "Helium"],
-                    correct: 2
-                },
-                {
-                    question: "What percentage of the world's water is fresh water?",
-                    options: ["10%", "3%", "25%", "50%"],
-                    correct: 1
-                },
-                {
-                    question: "Which of these is NOT a renewable energy source?",
-                    options: ["Solar", "Wind", "Natural gas", "Hydroelectric"],
-                    correct: 2
-                },
-                {
-                    question: "What is the most recycled material in the world?",
-                    options: ["Paper", "Glass", "Aluminum", "Plastic"],
-                    correct: 2
-                },
-                {
-                    question: "Which ecosystem stores the most carbon?",
-                    options: ["Tropical rainforests", "Coral reefs", "Wetlands", "Grasslands"],
-                    correct: 0
-                },
-                {
-                    question: "What is the main benefit of using LED light bulbs?",
-                    options: ["They last longer", "They are brighter", "They use less energy", "Both A and C"],
-                    correct: 3
-                },
-                {
-                    question: "Which of these is a greenhouse gas?",
-                    options: ["Oxygen", "Nitrogen", "Methane", "Hydrogen"],
-                    correct: 2
-                },
-                {
-                    question: "What is the primary purpose of a carbon footprint?",
-                    options: ["To measure water usage", "To calculate waste production", "To estimate greenhouse gas emissions", "To track electricity consumption"],
-                    correct: 2
-                }
-            ];
+            // Show initial warning
+            Swal.fire({
+                title: 'Attention!',
+                html: 'Do not attempt to refresh or exit this page until you\'ve finished all the questions.',
+                icon: 'warning',
+                confirmButtonColor: '#2e7d32',
+                confirmButtonText: 'I Understand'
+            });
+            
+            // Question bank with questions for each level
+            const questionBank = {
+                1: [
+                    {
+                        question: "What is the most effective way to reduce your carbon footprint?",
+                        options: ["Using public transportation", "Planting trees", "Reducing meat consumption", "Using energy-efficient lightbulbs"],
+                        correct: 2
+                    },
+                    {
+                        question: "Which of the following materials takes the longest to decompose?",
+                        options: ["Paper", "Plastic bottles", "Banana peels", "Cotton cloth"],
+                        correct: 1
+                    },
+                    {
+                        question: "What is the main cause of ocean acidification?",
+                        options: ["Plastic pollution", "Oil spills", "Excess carbon dioxide absorption", "Sewage runoff"],
+                        correct: 2
+                    },
+                    {
+                        question: "Which renewable energy source is the most widely used worldwide?",
+                        options: ["Solar power", "Wind power", "Hydroelectric power", "Geothermal energy"],
+                        correct: 2
+                    },
+                    {
+                        question: "What is the 'Great Pacific Garbage Patch' primarily composed of?",
+                        options: ["Industrial waste", "Microplastics", "Discarded fishing gear", "Glass bottles"],
+                        correct: 1
+                    },
+                    {
+                        question: "Which of these actions saves the most water?",
+                        options: ["Taking shorter showers", "Fixing leaky faucets", "Installing low-flow toilets", "Using a broom instead of a hose to clean driveways"],
+                        correct: 1
+                    },
+                    {
+                        question: "What is the leading cause of deforestation worldwide?",
+                        options: ["Urban expansion", "Agriculture", "Logging for timber", "Mining operations"],
+                        correct: 1
+                    },
+                    {
+                        question: "Which gas is primarily responsible for global warming?",
+                        options: ["Oxygen", "Nitrogen", "Carbon dioxide", "Helium"],
+                        correct: 2
+                    },
+                    {
+                        question: "What percentage of the world's water is fresh water?",
+                        options: ["10%", "3%", "25%", "50%"],
+                        correct: 1
+                    },
+                    {
+                        question: "Which of these is NOT a renewable energy source?",
+                        options: ["Solar", "Wind", "Natural gas", "Hydroelectric"],
+                        correct: 2
+                    }
+                ],
+                2: [
+                    {
+                        question: "What is the most recycled material in the world?",
+                        options: ["Paper", "Glass", "Aluminum", "Plastic"],
+                        correct: 2
+                    },
+                    {
+                        question: "Which ecosystem stores the most carbon?",
+                        options: ["Tropical rainforests", "Coral reefs", "Wetlands", "Grasslands"],
+                        correct: 0
+                    },
+                    {
+                        question: "What is the main benefit of using LED light bulbs?",
+                        options: ["They last longer", "They are brighter", "They use less energy", "Both A and C"],
+                        correct: 3
+                    },
+                    {
+                        question: "Which of these is a greenhouse gas?",
+                        options: ["Oxygen", "Nitrogen", "Methane", "Hydrogen"],
+                        correct: 2
+                    },
+                    {
+                        question: "What is the primary purpose of a carbon footprint?",
+                        options: ["To measure water usage", "To calculate waste production", "To estimate greenhouse gas emissions", "To track electricity consumption"],
+                        correct: 2
+                    },
+                    {
+                        question: "What is the main source of marine pollution?",
+                        options: ["Oil spills", "Plastic waste", "Industrial chemicals", "Sewage"],
+                        correct: 1
+                    },
+                    {
+                        question: "Which of these is a renewable resource?",
+                        options: ["Coal", "Natural gas", "Solar energy", "Petroleum"],
+                        correct: 2
+                    },
+                    {
+                        question: "What does 'reduce, reuse, recycle' promote?",
+                        options: ["Waste management", "Energy conservation", "Sustainable living", "All of the above"],
+                        correct: 3
+                    },
+                    {
+                        question: "Which animal is most affected by plastic pollution in oceans?",
+                        options: ["Sea turtles", "Dolphins", "Sea birds", "All of the above"],
+                        correct: 3
+                    },
+                    {
+                        question: "What is composting?",
+                        options: ["Recycling organic waste into fertilizer", "Burning waste for energy", "Sorting recyclables", "None of the above"],
+                        correct: 0
+                    }
+                ],
+                3: [
+                    {
+                        question: "What is the largest source of renewable energy worldwide?",
+                        options: ["Wind power", "Solar power", "Hydroelectric power", "Biomass"],
+                        correct: 2
+                    },
+                    {
+                        question: "Which country is the largest producer of solar energy?",
+                        options: ["United States", "Germany", "China", "Japan"],
+                        correct: 2
+                    },
+                    {
+                        question: "What is the main environmental advantage of electric vehicles?",
+                        options: ["Reduced air pollution", "Lower manufacturing costs", "Faster acceleration", "Longer lifespan"],
+                        correct: 0
+                    },
+                    {
+                        question: "Which of these is a sustainable farming practice?",
+                        options: ["Crop rotation", "Monoculture", "Heavy pesticide use", "Clear-cutting"],
+                        correct: 0
+                    },
+                    {
+                        question: "What is the 'Greenhouse Effect'?",
+                        options: ["The process of growing plants indoors", "The trapping of heat by atmospheric gases", "The effect of green paint on temperature", "A method of composting"],
+                        correct: 1
+                    },
+                    {
+                        question: "Which of these is NOT a fossil fuel?",
+                        options: ["Coal", "Natural gas", "Uranium", "Petroleum"],
+                        correct: 2
+                    },
+                    {
+                        question: "What is the primary cause of coral bleaching?",
+                        options: ["Ocean acidification", "Rising water temperatures", "Pollution", "Overfishing"],
+                        correct: 1
+                    },
+                    {
+                        question: "Which organization is known for its environmental activism?",
+                        options: ["Greenpeace", "Red Cross", "Amnesty International", "Doctors Without Borders"],
+                        correct: 0
+                    },
+                    {
+                        question: "What is the main goal of the Paris Agreement?",
+                        options: ["To reduce plastic waste", "To limit global warming", "To protect endangered species", "To promote renewable energy"],
+                        correct: 1
+                    },
+                    {
+                        question: "Which of these is a biodegradable material?",
+                        options: ["Styrofoam", "Plastic bags", "Paper", "Glass"],
+                        correct: 2
+                    }
+                ],
+                // Additional levels would be defined here
+                4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: []
+            };
             
             // Initialize user progress
             let userProgress = {
-                trivia_progress: 0,
-                points: 0
+                currentLevel: 1,
+                unlockedLevels: 1,
+                scores: {}
             };
             
             let currentQuestions = [];
             let currentQuestionIndex = 0;
             let score = 0;
             let timerInterval;
-            let timeLeft = 10;
+            let timeLeft = 20;
+            let isQuizCompleted = false;
             
             const progressBar = document.getElementById('progressBar');
             const progressText = document.getElementById('progressText');
             const triviaForm = document.getElementById('triviaForm');
             const questionsContainer = document.getElementById('questionsContainer');
             const completionScreen = document.getElementById('completionScreen');
-            const continueButton = document.getElementById('continueButton');
-            const difficultyInput = document.getElementById('difficultyInput');
-            const difficultyButtons = document.querySelectorAll('.difficulty-btn');
-            const backButton = document.getElementById('backButton');
-            const dashboardButton = document.getElementById('dashboardButton');
-            const restartButton = document.getElementById('restartButton');
+            const levelStagesContainer = document.getElementById('levelStages');
             const timerElement = document.getElementById('timer');
             const timeLeftElement = document.getElementById('timeLeft');
             const scoreDisplay = document.getElementById('scoreDisplay');
             const pointsEarned = document.getElementById('pointsEarned');
+            const restartButton = document.getElementById('restartButton');
+            const nextLevelButton = document.getElementById('nextLevelButton');
+            const currentLevelInput = document.getElementById('currentLevel');
+            const completedLevelSpan = document.getElementById('completedLevel');
             
             // Initialize the game
             initGame();
             
+            // Handle beforeunload event
+            window.addEventListener('beforeunload', function (e) {
+                if (!isQuizCompleted) {
+                    e.preventDefault();
+                    e.returnValue = 'Are you sure you want to exit this page? Your scores will be sent directly to your instructor.';
+                    
+                    // Show confirmation dialog
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        html: 'Your scores will be sent directly to your instructor if you exit now.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#2e7d32',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, exit page',
+                        cancelButtonText: 'Stay on page'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // User confirmed exit, allow the page to unload
+                            isQuizCompleted = true;
+                            window.removeEventListener('beforeunload', arguments.callee);
+                            window.close();
+                        }
+                    });
+                    
+                    return e.returnValue;
+                }
+            });
+            
             function initGame() {
+                // Load user progress from storage
+                loadUserProgress();
+                
+                // Generate level stages
+                generateLevelStages();
+                
+                // Start the current level
+                startLevel(userProgress.currentLevel);
+            }
+            
+            function loadUserProgress() {
+                // In a real app, this would load from a database or localStorage
+                const savedProgress = localStorage.getItem('ecoTriviaProgress');
+                if (savedProgress) {
+                    userProgress = JSON.parse(savedProgress);
+                }
+            }
+            
+            function saveUserProgress() {
+                // Save progress to localStorage
+                localStorage.setItem('ecoTriviaProgress', JSON.stringify(userProgress));
+            }
+            
+            function generateLevelStages() {
+                levelStagesContainer.innerHTML = '';
+                
+                for (let i = 1; i <= 10; i++) {
+                    const levelStage = document.createElement('div');
+                    levelStage.className = 'level-stage';
+                    levelStage.textContent = i;
+                    levelStage.dataset.level = i;
+                    
+                    // Mark completed levels
+                    if (userProgress.scores[i] >= 5) {
+                        levelStage.classList.add('completed');
+                    }
+                    
+                    // Mark locked levels
+                    if (i > userProgress.unlockedLevels) {
+                        levelStage.classList.add('locked');
+                    }
+                    
+                    // Mark active level
+                    if (i === userProgress.currentLevel) {
+                        levelStage.classList.add('active');
+                    }
+                    
+                    // Add click event to unlocked levels
+                    if (i <= userProgress.unlockedLevels) {
+                        levelStage.addEventListener('click', function() {
+                            startLevel(i);
+                        });
+                    }
+                    
+                    levelStagesContainer.appendChild(levelStage);
+                }
+            }
+            
+            function startLevel(level) {
+                // Update current level
+                userProgress.currentLevel = level;
+                currentLevelInput.value = level;
+                saveUserProgress();
+                
                 // Reset game state
                 currentQuestionIndex = 0;
                 score = 0;
                 scoreDisplay.textContent = `Score: ${score}`;
                 
-                // Select 10 random questions
-                currentQuestions = getRandomQuestions(questionBank, 10);
+                // Hide completion screen
+                completionScreen.classList.add('d-none');
+                triviaForm.classList.remove('d-none');
+                
+                // Get questions for this level
+                currentQuestions = questionBank[level] || getRandomQuestions(questionBank[1], 10);
                 
                 // Generate question cards
                 generateQuestionCards();
@@ -611,6 +835,9 @@
                 
                 // Start timer for first question
                 startTimer();
+                
+                // Update level stages
+                generateLevelStages();
             }
             
             function getRandomQuestions(questions, count) {
@@ -704,8 +931,14 @@
                 progressBar.style.width = `${progress}%`;
                 progressText.textContent = `Question ${index + 1} of ${currentQuestions.length}`;
                 
+                // Update level stage
+                document.querySelectorAll('.level-stage').forEach(stage => {
+                    stage.classList.remove('active');
+                });
+                document.querySelector(`.level-stage[data-level="${userProgress.currentLevel}"]`).classList.add('active');
+                
                 // Reset and start timer
-                timeLeft = 10;
+                timeLeft = 20;
                 timeLeftElement.textContent = timeLeft;
                 timerElement.classList.remove('warning', 'danger');
                 startTimer();
@@ -764,17 +997,6 @@
                 }
             }
             
-            // Keyboard navigation
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'ArrowRight' && currentQuestionIndex < currentQuestions.length - 1) {
-                    clearInterval(timerInterval);
-                    navigateQuestions(1);
-                } else if (e.key === 'ArrowLeft' && currentQuestionIndex > 0) {
-                    clearInterval(timerInterval);
-                    navigateQuestions(-1);
-                }
-            });
-            
             // Form submission
             triviaForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -783,241 +1005,82 @@
                 // Calculate score
                 calculateScore();
                 
+                // Save score for this level
+                userProgress.scores[userProgress.currentLevel] = score;
+                
+                // Check if user unlocked next level
+                if (score >= 5 && userProgress.currentLevel === userProgress.unlockedLevels && userProgress.unlockedLevels < 10) {
+                    userProgress.unlockedLevels++;
+                }
+                
+                // Save progress
+                saveUserProgress();
+                
                 // Show completion screen
                 triviaForm.classList.add('d-none');
                 completionScreen.classList.remove('d-none');
                 
-                // Update points display
+                // Update completion screen
+                completedLevelSpan.textContent = userProgress.currentLevel;
                 pointsEarned.textContent = score;
                 
-                // Check if user got perfect score
-                const isPerfectScore = score === currentQuestions.length;
-                
-                if (isPerfectScore) {
-                    // Perfect score - show continue button and award 10 points
-                    continueButton.classList.remove('d-none');
-                    pointsEarned.textContent = "10";
-                    
-                    // Update user progress
-                    userProgress.trivia_progress = 100;
-                    userProgress.points += 10;
-                    
-                    // Unlock next level
-                    document.querySelector('.difficulty-btn.moderate').classList.remove('locked');
-                    
-                    // Update database with points
-                    const updateSuccess = await updateUserPoints(10);
-                    if (updateSuccess) {
-                        // Unlock next level in database
-                        await unlockNextLevel();
-                        
+                // Show appropriate message
+                if (score >= 5) {
+                    if (userProgress.currentLevel < 10) {
                         Swal.fire({
-                            title: 'Perfect Score!',
-                            text: '10 points have been added to your account!',
+                            title: 'Level Complete!',
+                            html: `You scored ${score} out of 10!<br>Next level unlocked!`,
                             icon: 'success',
                             confirmButtonColor: '#2e7d32'
                         });
                     } else {
                         Swal.fire({
-                            title: 'Error',
-                            text: 'Could not update your points. Please try again.',
-                            icon: 'error',
+                            title: 'Congratulations!',
+                            html: `You've completed all levels with a score of ${score} out of 10!`,
+                            icon: 'success',
                             confirmButtonColor: '#2e7d32'
                         });
+                        // Mark quiz as completed to allow exit without warning
+                        isQuizCompleted = true;
                     }
                 } else {
-                    // Not perfect score - hide continue button
-                    continueButton.classList.add('d-none');
-                    
-                    // Update user progress without unlocking next level
-                    userProgress.trivia_progress = Math.max(userProgress.trivia_progress, Math.floor((score / currentQuestions.length) * 100));
-                    
-                    // Update database with partial progress (no points)
-                    await updateUserPoints(0);
-                    
                     Swal.fire({
-                        title: 'Good Try!',
-                        html: `You scored ${score} out of ${currentQuestions.length}.<br>Get a perfect score to unlock the next level and earn 10 points!`,
+                        title: 'Try Again',
+                        html: `You scored ${score} out of 10.<br>You need at least 5 points to unlock the next level.`,
                         icon: 'info',
                         confirmButtonColor: '#2e7d32'
                     });
                 }
-                
-                // Save user progress
-                saveUserProgress(userProgress);
             });
             
-            function calculateScore() {
-                score = 0;
-                
-                currentQuestions.forEach((question, index) => {
-                    const selectedOption = document.querySelector(`input[name="answer_${index}"]:checked`);
-                    
-                    if (selectedOption && parseInt(selectedOption.value) === question.correct) {
-                        score += 1;
-                    }
-                });
-                
-                scoreDisplay.textContent = `Score: ${score}`;
+      function calculateScore() {
+    score = 0;
+    
+    currentQuestions.forEach((question, index) => {
+        const selectedOption = document.querySelector(`input[name="answer_${index}"]:checked`);
+        
+        // FIXED: Properly compare the selected value with the correct answer
+        if (selectedOption) {
+            const selectedValue = parseInt(selectedOption.value);
+            if (selectedValue === question.correct) {
+                score += 1;
             }
+        }
+    });
+    
+    scoreDisplay.textContent = `Score: ${score}`;
+}
             
-            // Function to save user progress (simulated)
-            function saveUserProgress(progress) {
-                // In a real app, this would make an API call to your backend
-                console.log("Saving user progress:", progress);
-                // Example: localStorage.setItem('userProgress', JSON.stringify(progress));
-                
-                // Simulate saving to database
-                Swal.fire({
-                    title: 'Progress Saved',
-                    text: 'Your progress has been saved successfully!',
-                    icon: 'success',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            }
-            
-            // Function to update user points in the database (simulated)
-            async function updateUserPoints(points) {
-                try {
-                    // This would be replaced with your actual API endpoint
-                    // Simulate API call with timeout
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    // In a real app, this would be the response from your server
-                    return true;
-                } catch (error) {
-                    console.error('Error updating user points:', error);
-                    return false;
+            // Next level button handler
+            nextLevelButton.addEventListener('click', function() {
+                if (userProgress.currentLevel < 10 && userProgress.unlockedLevels > userProgress.currentLevel) {
+                    startLevel(userProgress.currentLevel + 1);
                 }
-            }
-            
-            // Function to unlock next level (simulated)
-            async function unlockNextLevel() {
-                try {
-                    // This would be replaced with your actual API endpoint
-                    // Simulate API call with timeout
-                    await new Promise(resolve => setTimeout(resolve, 800));
-                    
-                    // In a real app, this would be the response from your server
-                    return true;
-                } catch (error) {
-                    console.error('Error unlocking next level:', error);
-                    return false;
-                }
-            }
-            
-            // Continue button handler
-            continueButton.addEventListener('click', async function() {
-                // Check if user can proceed to next level
-                const canProceed = await canProceedToNextLevel();
-                
-                if (canProceed) {
-                    Swal.fire({
-                        title: 'Level Complete!',
-                        html: `
-                            <p>You've successfully completed the Easy level with a perfect score!</p>
-                            <div style="background-color: #e8f5e9; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
-                                <i class="fas fa-coins" style="color: #ffc107;"></i> 
-                                <strong>+10 points added to your account!</strong>
-                            </div>
-                            <p>Moderate level is now unlocked!</p>
-                        `,
-                        icon: 'success',
-                        confirmButtonColor: '#2e7d32',
-                        confirmButtonText: 'Continue to Moderate Level'
-                    }).then(() => {
-                        // In a real app, this would redirect to the moderate level
-                        // For now, we'll just show a message
-                        Swal.fire({
-                            title: 'Coming Soon',
-                            text: 'The Moderate level will be available in the next update!',
-                            icon: 'info',
-                            confirmButtonColor: '#2e7d32'
-                        });
-                    });
-                } else {
-                    Swal.fire({
-                        title: 'Access Denied',
-                        text: 'You need a perfect score to proceed to the next level.',
-                        icon: 'error',
-                        confirmButtonColor: '#2e7d32'
-                    });
-                }
-            });
-            
-            // Function to check if user can proceed to next level (simulated)
-            async function canProceedToNextLevel() {
-                try {
-                    // This would be replaced with your actual API endpoint
-                    // Simulate API call with timeout
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    
-                    // In a real app, this would be the response from your server
-                    return true;
-                } catch (error) {
-                    console.error('Error checking progression:', error);
-                    return false;
-                }
-            }
-            
-            // Handle difficulty selection
-            difficultyButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    if (this.classList.contains('locked')) {
-                        Swal.fire({
-                            title: 'Level Locked',
-                            text: 'You need to complete the previous level with a perfect score first to unlock this difficulty.',
-                            icon: 'info',
-                            confirmButtonColor: '#2e7d32'
-                        });
-                        return;
-                    }
-                    
-                    difficultyButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    const difficulty = this.dataset.difficulty;
-                    difficultyInput.value = difficulty;
-                    
-                    // In a real app, this would fetch new questions for the selected difficulty
-                    Swal.fire({
-                        title: 'Loading Questions',
-                        text: `Preparing ${difficulty} level questions...`,
-                        icon: 'info',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-                });
-            });
-            
-            // Back button handler - now goes directly to dashboard
-            backButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                clearInterval(timerInterval);
-                
-                // In a real app, this would save progress before leaving
-                saveUserProgress(userProgress);
-                
-                // Redirect to dashboard (in a real app)
-                window.location.href = 'dashboard.blade.php';
-            });
-            
-            // Dashboard button handler
-            dashboardButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                // In a real app, this would save progress before leaving
-                saveUserProgress(userProgress);
-                
-                // Redirect to dashboard (in a real app)
-                window.location.href = 'dashboard.blade.php';
             });
             
             // Restart button handler
             restartButton.addEventListener('click', function() {
-                completionScreen.classList.add('d-none');
-                triviaForm.classList.remove('d-none');
-                initGame();
+                startLevel(userProgress.currentLevel);
             });
         });
     </script>

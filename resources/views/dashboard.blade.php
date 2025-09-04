@@ -607,89 +607,70 @@
             </div>
         </div>
 
-        <h2 class="section-title">
-            <i class="fas fa-gamepad"></i>
-            NSTP Environmental Games
-        </h2>
+       <h2 class="section-title">
+    <i class="fas fa-gamepad"></i>
+    NSTP Environmental Games
+</h2>
 
-        <div class="games-grid">
-            <!-- Easy Game -->
-            <div class="game-card">
-                <div class="game-image" style="background-image: url('https://images.unsplash.com/photo-1605000797499-95a51c5269ae?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80');">
-                    <span class="game-difficulty easy">Easy</span>
-                </div>
-                <div class="game-content">
-                    <h3 class="game-title">Eco-Trivia Challenge</h3>
-                    <p class="game-description">Test your basic knowledge of environmental conservation with this fun multiple-choice quiz.</p>
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: {{ Auth::user()->trivia_progress }}%"></div>
-                    </div>
-                    <p class="progress-text">Progress: {{ Auth::user()->trivia_progress }}%</p>
-                    <div class="game-stats">
-                        <span class="game-points">+10 points</span>
-                        <a href="{{ route('games.trivia', ['difficulty' => 'easy']) }}" class="game-button">Play Now</a>
-                    </div>
-                </div>
+<div class="games-grid">
+    <!-- Easy Game -->
+    <div class="game-card">
+        <div class="game-image" style="background-image: url('https://images.unsplash.com/photo-1605000797499-95a51c5269ae?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80');">
+            <span class="game-difficulty easy">Easy</span>
+        </div>
+        <div class="game-content">
+            <h3 class="game-title">Eco-Trivia Challenge</h3>
+            <p class="game-description">Test your basic knowledge of environmental conservation with this fun multiple-choice quiz.</p>
+            <div class="progress-container">
+                <div class="progress-bar" style="width: {{ Auth::user()->trivia_progress }}%"></div>
             </div>
-
-            <!-- Moderate Game -->
-            <div class="game-card @if(Auth::user()->trivia_progress < 100) locked-game @endif">
-                @if(Auth::user()->trivia_progress < 100)
-                    <div class="lock-icon">
-                        <i class="fas fa-lock"></i>
-                        <p style="font-size: 1rem; margin-top: 5px;">Complete Easy to unlock</p>
-                    </div>
-                @endif
-                <div class="game-image" style="background-image: url('https://images.unsplash.com/photo-1466611653911-95081537e5b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80');">
-                    <span class="game-difficulty moderate">Moderate</span>
-                </div>
-                <div class="game-content">
-                    <h3 class="game-title">Waste Sorting Master</h3>
-                    <p class="game-description">Sort different types of waste into proper categories against the clock.</p>
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: {{ Auth::user()->waste_sorting_progress }}%"></div>
-                    </div>
-                    <p class="progress-text">Progress: {{ Auth::user()->waste_sorting_progress }}%</p>
-                    <div class="game-stats">
-                        <span class="game-points">+20 points</span>
-                        @if(Auth::user()->trivia_progress >= 100)
-                            <a href="{{ route('games.waste-sorting', ['difficulty' => 'moderate']) }}" class="game-button">Play Now</a>
-                        @else
-                            <button class="game-button locked-button" disabled>Locked</button>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Difficult Game -->
-            <div class="game-card @if(Auth::user()->waste_sorting_progress < 100) locked-game @endif">
-                @if(Auth::user()->waste_sorting_progress < 100)
-                    <div class="lock-icon">
-                        <i class="fas fa-lock"></i>
-                        <p style="font-size: 1rem; margin-top: 5px;">Complete Moderate to unlock</p>
-                    </div>
-                @endif
-                <div class="game-image" style="background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80');">
-                    <span class="game-difficulty difficult">Difficult</span>
-                </div>
-                <div class="game-content">
-                    <h3 class="game-title">Community Eco-Plan</h3>
-                    <p class="game-description">Develop a sustainable plan for a virtual community with limited resources.</p>
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: {{ Auth::user()->eco_plan_progress }}%"></div>
-                    </div>
-                    <p class="progress-text">Progress: {{ Auth::user()->eco_plan_progress }}%</p>
-                    <div class="game-stats">
-                        <span class="game-points">+30 points</span>
-                        @if(Auth::user()->waste_sorting_progress >= 100)
-                            <a href="{{ route('games.eco-plan', ['difficulty' => 'difficult']) }}" class="game-button">Play Now</a>
-                        @else
-                            <button class="game-button locked-button" disabled>Locked</button>
-                        @endif
-                    </div>
-                </div>
+            <p class="progress-text">Progress: {{ Auth::user()->trivia_progress }}%</p>
+            <div class="game-stats">
+                <span class="game-points">+10 points</span>
+                <a href="{{ route('games.trivia', ['difficulty' => 'easy']) }}" class="game-button">Play Now</a>
             </div>
         </div>
+    </div>
+
+    <!-- Moderate Game -->
+    <div class="game-card">
+        <div class="game-image" style="background-image: url('https://images.unsplash.com/photo-1466611653911-95081537e5b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80');">
+            <span class="game-difficulty moderate">Moderate</span>
+        </div>
+        <div class="game-content">
+            <h3 class="game-title">Waste Sorting Master</h3>
+            <p class="game-description">Sort different types of waste into proper categories against the clock.</p>
+            <div class="progress-container">
+                <div class="progress-bar" style="width: {{ Auth::user()->waste_sorting_progress }}%"></div>
+            </div>
+            <p class="progress-text">Progress: {{ Auth::user()->waste_sorting_progress }}%</p>
+            <div class="game-stats">
+                <span class="game-points">+20 points</span>
+                <a href="{{ route('games.waste-sorting', ['difficulty' => 'moderate']) }}" class="game-button">Play Now</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Difficult Game -->
+    <div class="game-card">
+        <div class="game-image" style="background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80');">
+            <span class="game-difficulty difficult">Difficult</span>
+        </div>
+        <div class="game-content">
+            <h3 class="game-title">Community Eco-Plan</h3>
+            <p class="game-description">Develop a sustainable plan for a virtual community with limited resources.</p>
+            <div class="progress-container">
+                <div class="progress-bar" style="width: {{ Auth::user()->eco_plan_progress }}%"></div>
+            </div>
+            <p class="progress-text">Progress: {{ Auth::user()->eco_plan_progress }}%</p>
+            <div class="game-stats">
+                <span class="game-points">+30 points</span>
+                <a href="{{ route('games.eco-plan', ['difficulty' => 'difficult']) }}" class="game-button">Play Now</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 
         <!-- Admin Panel Section (Only visible to admins) -->
         <div class="admin-only">
