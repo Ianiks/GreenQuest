@@ -2,6 +2,6 @@
     RewriteEngine On
 
     # Redirect all requests to the public folder
-    RewriteCond %{REQUEST_URI} !^/public/
-    RewriteRule ^(.*)$ public/$1 [L]
+    RewriteCond %{REQUEST_URI} !^/
+    RewriteRule ^(.*)$1 [L]
 </IfModule>
