@@ -90,6 +90,59 @@
             font-size: 1.8rem;
         }
         
+        .level-stages {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .level-stage {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            background-color: #fff3e0;
+            color: var(--moderate);
+            border: 2px solid var(--moderate-light);
+            transition: all 0.3s ease;
+        }
+        
+        .level-stage.active {
+            background-color: var(--moderate);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(245, 124, 0, 0.2);
+        }
+        
+        .level-stage.completed {
+            background-color: var(--secondary);
+            color: var(--text-dark);
+            border-color: var(--secondary);
+        }
+        
+        .level-stage.locked {
+            background-color: #f5f5f5;
+            color: var(--locked);
+            border-color: var(--locked);
+            cursor: not-allowed;
+            position: relative;
+        }
+        
+        .level-stage.locked::after {
+            content: '\f023';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            font-size: 12px;
+            bottom: -5px;
+            right: -5px;
+        }
+        
         .difficulty-selector {
             display: flex;
             justify-content: center;
@@ -401,6 +454,16 @@
                 top: auto;
             }
             
+            .level-stages {
+                gap: 0.3rem;
+            }
+            
+            .level-stage {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
+            
             .difficulty-selector {
                 flex-wrap: wrap;
             }
@@ -428,6 +491,10 @@
         </a>
             <h1>Waste Sorting Challenge</h1>
             
+            <div class="level-stages" id="levelStages">
+                <!-- Level stages 1-10 will be dynamically inserted here -->
+            </div>
+            
             <div class="difficulty-selector">
                 <div class="difficulty-btn easy" data-difficulty="easy">Easy</div>
                 <div class="difficulty-btn moderate active" data-difficulty="moderate">
@@ -446,7 +513,7 @@
             <div class="timer-container">
                 <div class="timer" id="timer">
                     <i class="fas fa-clock"></i>
-                    <span id="timeLeft">10</span> seconds
+                    <span id="timeLeft">20</span> seconds
                 </div>
                 <div class="score-display" id="scoreDisplay">Score: 0</div>
             </div>
@@ -454,6 +521,7 @@
 
         <form id="triviaForm">
             <input type="hidden" name="difficulty" value="moderate" id="difficultyInput">
+            <input type="hidden" id="currentLevel" value="1">
             
             <div id="questionsContainer">
                 <!-- Questions will be dynamically inserted here -->
@@ -464,20 +532,18 @@
         <div class="completion-message d-none" id="completionScreen">
             <i class="fas fa-trophy"></i>
             <h2>Congratulations!</h2>
-            <p>You've completed the Moderate level of Waste Sorting!</p>
+            <p>You've completed Level <span id="completedLevel">1</span> of Waste Sorting!</p>
             
             <div class="points-earned">
                 <i class="fas fa-coins"></i> 
-                <span>You earned <span id="pointsEarned">0</span> points!</span>
+                <span>You got <span id="pointsEarned">0</span> out of 10 points!</span>
             </div>
             
             <div class="completion-buttons">
-                <button class="btn d-none" id="continueButton">
-                    Continue to Difficult Level <i class="fas fa-arrow-right"></i>
+                <button type="button" class="btn" id="nextLevelButton">
+                    Next Level <i class="fas fa-arrow-right"></i>
                 </button>
-                
-               
-                <button class="btn" id="restartButton" style="background-color: #f0f0f0; color: #333;">
+                <button type="button" class="btn" id="restartButton" style="background-color: #f0f0f0; color: #333;">
                     <i class="fas fa-redo"></i> Play Again
                 </button>
             </div>
@@ -487,124 +553,173 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Question bank with 15 questions (10 will be randomly selected)
-            const questionBank = [
-                {
-                    question: "Which of these items is NOT recyclable in most curbside programs?",
-                    options: ["Pizza boxes with grease stains", "Glass bottles", "Aluminum cans", "Cardboard boxes"],
-                    correct: 0
-                },
-                {
-                    question: "How should you dispose of broken glass safely?",
-                    options: ["In the regular trash", "In the recycling bin", "Wrap it in paper and place in a sealed container", "Bury it in the backyard"],
-                    correct: 2
-                },
-                {
-                    question: "What is the proper way to dispose of batteries?",
-                    options: ["Regular trash", "Recycling bin", "Special battery recycling programs", "Compost bin"],
-                    correct: 2
-                },
-                {
-                    question: "Which of these can be composted?",
-                    options: ["Plastic utensils", "Meat and dairy products", "Fruit and vegetable scraps", "Styrofoam containers"],
-                    correct: 2
-                },
-                {
-                    question: "What should you do with plastic bags at recycling facilities?",
-                    options: ["Put them in the recycling bin", "Take them to special collection points", "Burn them", "Bury them"],
-                    correct: 1
-                },
-                {
-                    question: "Which item takes the longest to decompose in a landfill?",
-                    options: ["Paper napkin", "Plastic bottle", "Banana peel", "Cotton t-shirt"],
-                    correct: 1
-                },
-                {
-                    question: "What is 'wishcycling'?",
-                    options: ["Hoping your recycling gets processed", "Putting non-recyclables in the recycling bin", "Making wishes while recycling", "Special recycling program for toys"],
-                    correct: 1
-                },
-                {
-                    question: "How should you dispose of old medications?",
-                    options: ["Flush them down the toilet", "Throw them in the trash", "Take them to a pharmacy or medication take-back program", "Bury them in the garden"],
-                    correct: 2
-                },
-                {
-                    question: "Which of these is considered hazardous waste?",
-                    options: ["Food scraps", "Paper towels", "Paint and solvents", "Glass jars"],
-                    correct: 2
-                },
-                {
-                    question: "What should you do with electronics waste (e-waste)?",
-                    options: ["Put it in regular trash", "Recycle through special e-waste programs", "Bury it", "Burn it"],
-                    correct: 1
-                },
-                {
-                    question: "Which plastic recycling number is most commonly accepted?",
-                    options: ["#1 (PET)", "#3 (PVC)", "#6 (PS)", "#7 (Other)"],
-                    correct: 0
-                },
-                {
-                    question: "What is the main benefit of proper waste sorting?",
-                    options: ["Saves money", "Reduces landfill waste and conserves resources", "Makes garbage collectors' jobs easier", "Creates more jobs"],
-                    correct: 1
-                },
-                {
-                    question: "How should you prepare plastic containers for recycling?",
-                    options: ["Wash them thoroughly", "Leave them dirty", "Crush them into small pieces", "Melt them together"],
-                    correct: 0
-                },
-                {
-                    question: "What percentage of recycled materials actually gets recycled?",
-                    options: ["25%", "50%", "75%", "It varies significantly by material and location"],
-                    correct: 3
-                },
-                {
-                    question: "Which of these items should NEVER go in recycling bins?",
-                    options: ["Food-contaminated containers", "Clean paper", "Glass bottles", "Aluminum cans"],
-                    correct: 0
-                }
-            ];
+            // Show initial warning
+            Swal.fire({
+                title: 'Attention!',
+                html: 'Do not attempt to refresh or exit this page until you\'ve finished all the questions.',
+                icon: 'warning',
+                confirmButtonColor: '#f57c00',
+                confirmButtonText: 'I Understand'
+            });
             
+            // Question bank with questions for each level
+            const questionBank = {
+                1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: []
+            };
+
+            // Populate questionBank from Laravel-provided DB questions
+            const dbQuestions = @json($dbQuestionBank ?? []);
+
+            Object.entries(dbQuestions).forEach(([level, questions]) => {
+                const levelNum = parseInt(level);
+                if (!isNaN(levelNum) && Array.isArray(questions)) {
+                    questionBank[levelNum] = questions.map(q => ({
+                        question: q.question,
+                        options: [q.choice1, q.choice2, q.choice3, q.choice4],
+                        correct: q.correct_answer
+                    }));
+                }
+            });
+
+            console.log("Final question bank with DB data:", questionBank);
+
             // Initialize user progress
             let userProgress = {
-                waste_sorting_progress: 0,
-                points: 0
+                currentLevel: 1,
+                unlockedLevels: 1,
+                scores: {}
             };
             
             let currentQuestions = [];
             let currentQuestionIndex = 0;
             let score = 0;
             let timerInterval;
-            let timeLeft = 15;
+            let timeLeft = 20;
+            let isQuizCompleted = false;
             
             const progressBar = document.getElementById('progressBar');
             const progressText = document.getElementById('progressText');
             const triviaForm = document.getElementById('triviaForm');
             const questionsContainer = document.getElementById('questionsContainer');
             const completionScreen = document.getElementById('completionScreen');
-            const continueButton = document.getElementById('continueButton');
-            const difficultyInput = document.getElementById('difficultyInput');
-            const difficultyButtons = document.querySelectorAll('.difficulty-btn');
-            const backButton = document.getElementById('backButton');
-            const dashboardButton = document.getElementById('dashboardButton');
-            const restartButton = document.getElementById('restartButton');
+            const levelStagesContainer = document.getElementById('levelStages');
             const timerElement = document.getElementById('timer');
             const timeLeftElement = document.getElementById('timeLeft');
             const scoreDisplay = document.getElementById('scoreDisplay');
             const pointsEarned = document.getElementById('pointsEarned');
+            const restartButton = document.getElementById('restartButton');
+            const nextLevelButton = document.getElementById('nextLevelButton');
+            const currentLevelInput = document.getElementById('currentLevel');
+            const completedLevelSpan = document.getElementById('completedLevel');
             
             // Initialize the game
             initGame();
             
+            // Handle beforeunload event
+            window.addEventListener('beforeunload', function (e) {
+                if (!isQuizCompleted) {
+                    e.preventDefault();
+                    e.returnValue = 'Are you sure you want to exit this page? Your scores will be sent directly to your instructor.';
+                    
+                    // Show confirmation dialog
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        html: 'Your scores will be sent directly to your instructor if you exit now.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#f57c00',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, exit page',
+                        cancelButtonText: 'Stay on page'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // User confirmed exit, allow the page to unload
+                            isQuizCompleted = true;
+                            window.removeEventListener('beforeunload', arguments.callee);
+                            window.close();
+                        }
+                    });
+                    
+                    return e.returnValue;
+                }
+            });
+            
             function initGame() {
+                // Load user progress from storage
+                loadUserProgress();
+                
+                // Generate level stages
+                generateLevelStages();
+                
+                // Start the current level
+                startLevel(userProgress.currentLevel);
+            }
+            
+            function loadUserProgress() {
+                // In a real app, this would load from a database or localStorage
+                const savedProgress = localStorage.getItem('wasteSortingProgress');
+                if (savedProgress) {
+                    userProgress = JSON.parse(savedProgress);
+                }
+            }
+            
+            function saveUserProgress() {
+                // Save progress to localStorage
+                localStorage.setItem('wasteSortingProgress', JSON.stringify(userProgress));
+            }
+            
+            function generateLevelStages() {
+                levelStagesContainer.innerHTML = '';
+                
+                for (let i = 1; i <= 10; i++) {
+                    const levelStage = document.createElement('div');
+                    levelStage.className = 'level-stage';
+                    levelStage.textContent = i;
+                    levelStage.dataset.level = i;
+                    
+                    // Mark completed levels
+                    if (userProgress.scores[i] >= 5) {
+                        levelStage.classList.add('completed');
+                    }
+                    
+                    // Mark locked levels
+                    if (i > userProgress.unlockedLevels) {
+                        levelStage.classList.add('locked');
+                    }
+                    
+                    // Mark active level
+                    if (i === userProgress.currentLevel) {
+                        levelStage.classList.add('active');
+                    }
+                    
+                    // Add click event to unlocked levels
+                    if (i <= userProgress.unlockedLevels) {
+                        levelStage.addEventListener('click', function() {
+                            startLevel(i);
+                        });
+                    }
+                    
+                    levelStagesContainer.appendChild(levelStage);
+                }
+            }
+            
+            function startLevel(level) {
+                // Update current level
+                userProgress.currentLevel = level;
+                currentLevelInput.value = level;
+                saveUserProgress();
+                
                 // Reset game state
                 currentQuestionIndex = 0;
                 score = 0;
                 scoreDisplay.textContent = `Score: ${score}`;
                 
-                // Select 10 random questions
-                currentQuestions = getRandomQuestions(questionBank, 10);
+                // Hide completion screen
+                completionScreen.classList.add('d-none');
+                triviaForm.classList.remove('d-none');
+                
+                // Get questions for this level
+                currentQuestions = questionBank[level] || getRandomQuestions(questionBank[1], 10);
                 
                 // Generate question cards
                 generateQuestionCards();
@@ -614,6 +729,9 @@
                 
                 // Start timer for first question
                 startTimer();
+                
+                // Update level stages
+                generateLevelStages();
             }
             
             function getRandomQuestions(questions, count) {
@@ -707,6 +825,12 @@
                 progressBar.style.width = `${progress}%`;
                 progressText.textContent = `Question ${index + 1} of ${currentQuestions.length}`;
                 
+                // Update level stage
+                document.querySelectorAll('.level-stage').forEach(stage => {
+                    stage.classList.remove('active');
+                });
+                document.querySelector(`.level-stage[data-level="${userProgress.currentLevel}"]`).classList.add('active');
+                
                 // Reset and start timer
                 timeLeft = 20;
                 timeLeftElement.textContent = timeLeft;
@@ -767,17 +891,6 @@
                 }
             }
             
-            // Keyboard navigation
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'ArrowRight' && currentQuestionIndex < currentQuestions.length - 1) {
-                    clearInterval(timerInterval);
-                    navigateQuestions(1);
-                } else if (e.key === 'ArrowLeft' && currentQuestionIndex > 0) {
-                    clearInterval(timerInterval);
-                    navigateQuestions(-1);
-                }
-            });
-            
             // Form submission
             triviaForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -786,68 +899,52 @@
                 // Calculate score
                 calculateScore();
                 
+                // Save score for this level
+                userProgress.scores[userProgress.currentLevel] = score;
+                
+                // Check if user unlocked next level
+                if (score >= 5 && userProgress.currentLevel === userProgress.unlockedLevels && userProgress.unlockedLevels < 10) {
+                    userProgress.unlockedLevels++;
+                }
+                
+                // Save progress
+                saveUserProgress();
+                
                 // Show completion screen
                 triviaForm.classList.add('d-none');
                 completionScreen.classList.remove('d-none');
                 
-                // Update points display
+                // Update completion screen
+                completedLevelSpan.textContent = userProgress.currentLevel;
                 pointsEarned.textContent = score;
                 
-                // Check if user got perfect score
-                const isPerfectScore = score === currentQuestions.length;
-                
-                if (isPerfectScore) {
-                    // Perfect score - show continue button and award 15 points
-                    continueButton.classList.remove('d-none');
-                    pointsEarned.textContent = "15";
-                    
-                    // Update user progress
-                    userProgress.waste_sorting_progress = 100;
-                    userProgress.points += 15;
-                    
-                    // Unlock next level
-                    document.querySelector('.difficulty-btn.difficult').classList.remove('locked');
-                    
-                    // Update database with points
-                    const updateSuccess = await updateUserPoints(15);
-                    if (updateSuccess) {
-                        // Unlock next level in database
-                        await unlockNextLevel();
-                        
+                // Show appropriate message
+                if (score >= 5) {
+                    if (userProgress.currentLevel < 10) {
                         Swal.fire({
-                            title: 'Perfect Score!',
-                            text: '15 points have been added to your account!',
+                            title: 'Level Complete!',
+                            html: `You scored ${score} out of 10!<br>Next level unlocked!`,
                             icon: 'success',
                             confirmButtonColor: '#f57c00'
                         });
                     } else {
                         Swal.fire({
-                            title: 'Error',
-                            text: 'Could not update your points. Please try again.',
-                            icon: 'error',
+                            title: 'Congratulations!',
+                            html: `You've completed all levels with a score of ${score} out of 10!`,
+                            icon: 'success',
                             confirmButtonColor: '#f57c00'
                         });
+                        // Mark quiz as completed to allow exit without warning
+                        isQuizCompleted = true;
                     }
                 } else {
-                    // Not perfect score - hide continue button
-                    continueButton.classList.add('d-none');
-                    
-                    // Update user progress without unlocking next level
-                    userProgress.waste_sorting_progress = Math.max(userProgress.waste_sorting_progress, Math.floor((score / currentQuestions.length) * 100));
-                    
-                    // Update database with partial progress (no points)
-                    await updateUserPoints(0);
-                    
                     Swal.fire({
-                        title: 'Good Try!',
-                        html: `You scored ${score} out of ${currentQuestions.length}.<br>Get a perfect score to unlock the next level and earn 15 points!`,
+                        title: 'Try Again',
+                        html: `You scored ${score} out of 10.<br>You need at least 5 points to unlock the next level.`,
                         icon: 'info',
                         confirmButtonColor: '#f57c00'
                     });
                 }
-                
-                // Save user progress
-                saveUserProgress(userProgress);
             });
             
             function calculateScore() {
@@ -856,171 +953,28 @@
                 currentQuestions.forEach((question, index) => {
                     const selectedOption = document.querySelector(`input[name="answer_${index}"]:checked`);
                     
-                    if (selectedOption && parseInt(selectedOption.value) === question.correct) {
-                        score += 1;
+                    // FIXED: Properly compare the selected value with the correct answer
+                    if (selectedOption) {
+                        const selectedValue = parseInt(selectedOption.value);
+                        if (selectedValue === question.correct) {
+                            score += 1;
+                        }
                     }
                 });
                 
                 scoreDisplay.textContent = `Score: ${score}`;
             }
             
-            // Function to save user progress (simulated)
-            function saveUserProgress(progress) {
-                // In a real app, this would make an API call to your backend
-                console.log("Saving user progress:", progress);
-                // Example: localStorage.setItem('userProgress', JSON.stringify(progress));
-                
-                // Simulate saving to database
-                Swal.fire({
-                    title: 'Progress Saved',
-                    text: 'Your progress has been saved successfully!',
-                    icon: 'success',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            }
-            
-            // Function to update user points in the database (simulated)
-            async function updateUserPoints(points) {
-                try {
-                    // This would be replaced with your actual API endpoint
-                    // Simulate API call with timeout
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    // In a real app, this would be the response from your server
-                    return true;
-                } catch (error) {
-                    console.error('Error updating user points:', error);
-                    return false;
+            // Next level button handler
+            nextLevelButton.addEventListener('click', function() {
+                if (userProgress.currentLevel < 10 && userProgress.unlockedLevels > userProgress.currentLevel) {
+                    startLevel(userProgress.currentLevel + 1);
                 }
-            }
-            
-            // Function to unlock next level (simulated)
-            async function unlockNextLevel() {
-                try {
-                    // This would be replaced with your actual API endpoint
-                    // Simulate API call with timeout
-                    await new Promise(resolve => setTimeout(resolve, 800));
-                    
-                    // In a real app, this would be the response from your server
-                    return true;
-                } catch (error) {
-                    console.error('Error unlocking next level:', error);
-                    return false;
-                }
-            }
-            
-            // Continue button handler
-            continueButton.addEventListener('click', async function() {
-                // Check if user can proceed to next level
-                const canProceed = await canProceedToNextLevel();
-                
-                if (canProceed) {
-                    Swal.fire({
-                        title: 'Level Complete!',
-                        html: `
-                            <p>You've successfully completed the Moderate level with a perfect score!</p>
-                            <div style="background-color: #fff3e0; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
-                                <i class="fas fa-coins" style="color: #ffc107;"></i> 
-                                <strong>+15 points added to your account!</strong>
-                            </div>
-                            <p>Difficult level is now unlocked!</p>
-                        `,
-                        icon: 'success',
-                        confirmButtonColor: '#f57c00',
-                        confirmButtonText: 'Continue to Difficult Level'
-                    }).then(() => {
-                        // In a real app, this would redirect to the difficult level
-                        // For now, we'll just show a message
-                        Swal.fire({
-                            title: 'Coming Soon',
-                            text: 'The Difficult level will be available in the next update!',
-                            icon: 'info',
-                            confirmButtonColor: '#f57c00'
-                        });
-                    });
-                } else {
-                    Swal.fire({
-                        title: 'Access Denied',
-                        text: 'You need a perfect score to proceed to the next level.',
-                        icon: 'error',
-                        confirmButtonColor: '#f57c00'
-                    });
-                }
-            });
-            
-            // Function to check if user can proceed to next level (simulated)
-            async function canProceedToNextLevel() {
-                try {
-                    // This would be replaced with your actual API endpoint
-                    // Simulate API call with timeout
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    
-                    // In a real app, this would be the response from your server
-                    return true;
-                } catch (error) {
-                    console.error('Error checking progression:', error);
-                    return false;
-                }
-            }
-            
-            // Handle difficulty selection
-            difficultyButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    if (this.classList.contains('locked')) {
-                        Swal.fire({
-                            title: 'Level Locked',
-                            text: 'You need to complete the previous level with a perfect score first to unlock this difficulty.',
-                            icon: 'info',
-                            confirmButtonColor: '#f57c00'
-                        });
-                        return;
-                    }
-                    
-                    difficultyButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    const difficulty = this.dataset.difficulty;
-                    difficultyInput.value = difficulty;
-                    
-                    // In a real app, this would fetch new questions for the selected difficulty
-                    Swal.fire({
-                        title: 'Loading Questions',
-                        text: `Preparing ${difficulty} level questions...`,
-                        icon: 'info',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-                });
-            });
-            
-            // Back button handler - now goes directly to dashboard
-            backButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                clearInterval(timerInterval);
-                
-                // In a real app, this would save progress before leaving
-                saveUserProgress(userProgress);
-                
-                // Redirect to dashboard (in a real app)
-                window.location.href = 'dashboard.html';
-            });
-            
-            // Dashboard button handler
-            dashboardButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                // In a real app, this would save progress before leaving
-                saveUserProgress(userProgress);
-                
-                // Redirect to dashboard (in a real app)
-                window.location.href = 'dashboard.html';
             });
             
             // Restart button handler
             restartButton.addEventListener('click', function() {
-                completionScreen.classList.add('d-none');
-                triviaForm.classList.remove('d-none');
-                initGame();
+                startLevel(userProgress.currentLevel);
             });
         });
     </script>

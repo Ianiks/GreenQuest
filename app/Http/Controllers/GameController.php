@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GameController extends Controller
 {
@@ -346,175 +347,41 @@ class GameController extends Controller
         ]);
     }
 
-    public function trivia($difficulty = 'easy')
-    {
-        $questions = [
-            'easy' => [
-                [
-                    'question' => 'What is the capital of France?',
-                    'options' => ['London', 'Berlin', 'Paris', 'Rome'],
-                    'answer' => 2,
-                ],
-                [
-                    'question' => 'Which planet is known as the Red Planet?',
-                    'options' => ['Earth', 'Mars', 'Jupiter', 'Venus'],
-                    'answer' => 1,
-                ],
-                [
-                    'question' => 'What is H2O commonly known as?',
-                    'options' => ['Salt', 'Water', 'Oxygen', 'Hydrogen'],
-                    'answer' => 1,
-                ],
-                [
-                    'question' => 'Which language is primarily spoken in Brazil?',
-                    'options' => ['Spanish', 'Portuguese', 'French', 'English'],
-                    'answer' => 1,
-                ],
-                [
-                    'question' => 'How many continents are there on Earth?',
-                    'options' => ['5', '6', '7', '8'],
-                    'answer' => 2,
-                ],
-                [
-                    'question' => 'What is the largest ocean on Earth?',
-                    'options' => ['Atlantic', 'Indian', 'Arctic', 'Pacific'],
-                    'answer' => 3,
-                ],
-                [
-                    'question' => 'Which country is home to the kangaroo?',
-                    'options' => ['New Zealand', 'Australia', 'South Africa', 'Brazil'],
-                    'answer' => 1,
-                ],
-                [
-                    'question' => 'What is the currency of Japan?',
-                    'options' => ['Yuan', 'Won', 'Yen', 'Dollar'],
-                    'answer' => 2,
-                ],
-                [
-                    'question' => 'Which of these is NOT a primary color?',
-                    'options' => ['Red', 'Blue', 'Green', 'Yellow'],
-                    'answer' => 2,
-                ],
-                [
-                    'question' => 'How many days are in a leap year?',
-                    'options' => ['365', '366', '364', '367'],
-                    'answer' => 1,
-                ]
-            ],
-            'moderate' => [
-                [
-                    'question' => 'Which element has the chemical symbol "K"?',
-                    'options' => ['Potassium', 'Krypton', 'Kryptonite', 'Calcium'],
-                    'answer' => 0,
-                ],
-                [
-                    'question' => 'Who painted the Mona Lisa?',
-                    'options' => ['Van Gogh', 'Picasso', 'Da Vinci', 'Michelangelo'],
-                    'answer' => 2,
-                ],
-                [
-                    'question' => 'What is the largest organ in the human body?',
-                    'options' => ['Liver', 'Brain', 'Skin', 'Heart'],
-                    'answer' => 2,
-                ],
-                [
-                    'question' => 'Which country invented tea?',
-                    'options' => ['India', 'England', 'China', 'Japan'],
-                    'answer' => 2,
-                ],
-                [
-                    'question' => 'What is the smallest prime number?',
-                    'options' => ['0', '1', '2', '3'],
-                    'answer' => 2,
-                ],
-                [
-                    'question' => 'Which planet has the most moons?',
-                    'options' => ['Jupiter', 'Saturn', 'Neptune', 'Mars'],
-                    'answer' => 1,
-                ],
-                [
-                    'question' => 'Who wrote "Romeo and Juliet"?',
-                    'options' => ['Charles Dickens', 'William Shakespeare', 'Jane Austen', 'Mark Twain'],
-                    'answer' => 1,
-                ],
-                [
-                    'question' => 'What is the capital of Canada?',
-                    'options' => ['Toronto', 'Vancouver', 'Ottawa', 'Montreal'],
-                    'answer' => 2,
-                ],
-                [
-                    'question' => 'Which blood type is the universal donor?',
-                    'options' => ['A', 'B', 'AB', 'O'],
-                    'answer' => 3,
-                ],
-                [
-                    'question' => 'What is the largest desert in the world?',
-                    'options' => ['Sahara', 'Arabian', 'Gobi', 'Antarctic'],
-                    'answer' => 3,
-                ]
-            ],
-            'difficult' => [
-                [
-                    'question' => 'Which country has the most time zones?',
-                    'options' => ['USA', 'Russia', 'France', 'China'],
-                    'answer' => 2,
-                ],
-                [
-                    'question' => 'What is the only mammal capable of true flight?',
-                    'options' => ['Flying squirrel', 'Bat', 'Colugo', 'Sugar glider'],
-                    'answer' => 1,
-                ],
-                [
-                    'question' => 'Which language has the most native speakers?',
-                    'options' => ['English', 'Hindi', 'Spanish', 'Mandarin'],
-                    'answer' => 3,
-                ],
-                [
-                    'question' => 'What is the hardest natural substance on Earth?',
-                    'options' => ['Gold', 'Iron', 'Diamond', 'Quartz'],
-                    'answer' => 2,
-                ],
-                [
-                    'question' => 'Which planet rotates on its side?',
-                    'options' => ['Venus', 'Mars', 'Uranus', 'Neptune'],
-                    'answer' => 2,
-                ],
-                [
-                    'question' => 'Who discovered penicillin?',
-                    'options' => ['Marie Curie', 'Alexander Fleming', 'Louis Pasteur', 'Robert Koch'],
-                    'answer' => 1,
-                ],
-                [
-                    'question' => 'What is the only continent without reptiles or snakes?',
-                    'options' => ['Australia', 'Antarctica', 'Europe', 'North America'],
-                    'answer' => 1,
-                ],
-                [
-                    'question' => 'Which element is liquid at room temperature?',
-                    'options' => ['Bromine', 'Mercury', 'Gallium', 'All of the above'],
-                    'answer' => 3,
-                ],
-                [
-                    'question' => 'What is the most abundant gas in Earth\'s atmosphere?',
-                    'options' => ['Oxygen', 'Carbon Dioxide', 'Nitrogen', 'Argon'],
-                    'answer' => 2,
-                ],
-                [
-                    'question' => 'Which country has the longest coastline?',
-                    'options' => ['Russia', 'Canada', 'Australia', 'USA'],
-                    'answer' => 1,
-                ]
-            ]
+    
+    public function trivia()
+{
+    // Fetch questions from levels 1 to 10
+    $rawQuestions = DB::table('quizquestions')
+        ->whereBetween('level', [1, 10])
+        ->select('level', 'question', 'choice1', 'choice2', 'choice3', 'choice4', 'correct_answer')
+        ->get();
+
+    // Group questions by level
+    $dbQuestions = [];
+
+    foreach ($rawQuestions as $q) {
+        $dbQuestions[$q->level][] = [
+            'question' => $q->question,
+            'choice1' => $q->choice1,
+            'choice2' => $q->choice2,
+            'choice3' => $q->choice3,
+            'choice4' => $q->choice4,
+            'correct_answer' => (int) $q->correct_answer
         ];
-
-        $selectedQuestions = $questions[$difficulty] ?? $questions['easy'];
-        session()->put('trivia_correct', collect($selectedQuestions)->pluck('answer')->toArray());
-
-        return view('games.trivia', [
-            'questions' => $selectedQuestions,
-            'difficulty' => $difficulty
-        ]);
     }
+
+    // Ensure all levels 1 to 10 are included even if empty
+    for ($i = 1; $i <= 10; $i++) {
+        if (!isset($dbQuestions[$i])) {
+            $dbQuestions[$i] = [];
+        }
+    }
+
+    return view('games.trivia', [
+        'dbQuestionBank' => $dbQuestions
+    ]);
+}
+
 
     public function submitWasteSortingQuiz(Request $request)
     {

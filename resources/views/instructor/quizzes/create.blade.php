@@ -26,6 +26,18 @@
                     </select>
                 </div>
 
+                {{-- Quiz Level --}}
+                <div class="mb-3">
+                    <label for="level" class="form-label">Level</label>
+                    <input type="number" name="level" id="level" class="form-control" required>
+                </div>
+
+                {{-- Access Code --}}
+                <div class="mb-3">
+                    <label for="access_code" class="form-label">Access Code</label>
+                    <input type="text" name="access_code" id="access_code" class="form-control" required>
+                </div>
+
                 <hr>
 
                 {{-- Questions Accordion --}}
@@ -124,7 +136,7 @@
 
     // Remove question
     document.getElementById('questionsAccordion').addEventListener('click', function(e) {
-        if(e.target.classList.contains('remove-question')) {
+        if (e.target.classList.contains('remove-question')) {
             e.target.closest('.accordion-item').remove();
         }
     });

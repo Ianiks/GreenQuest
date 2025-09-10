@@ -154,4 +154,6 @@ Route::prefix('instructor')->name('instructor.')->group(function () {
             Route::delete('/{quiz}', [InstructorQuizController::class, 'destroy'])->name('destroy');
         });
     });
+    Route::get('/games/trivia-levels', [GameController::class, 'triviaGame'])->name('games.trivia.levels');
+
 });

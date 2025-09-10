@@ -9,23 +9,23 @@ class Question extends Model
 {
     use HasFactory;
 
-    // Allow mass assignment for these fields
-    protected $fillable = [
-        'quiz_id',      // link to the quiz
-        'question_text',         // question text
-        'correct_answer' // correct answer index
-    ];
-    
+    protected $table = 'quizquestions'; // <-- important, since you’re using this table
 
-    // Relation to Quiz
+    protected $fillable = [
+        'quiz_id',
+        'question',
+        'choice1',
+        'choice2',
+        'choice3',
+        'choice4',
+        'correct_answer',
+        'level',
+        'difficulty',
+        'access_code',
+    ];
+
     public function quiz()
     {
         return $this->belongsTo(Quiz::class);
-    }
-
-    // Relation to Answers
-    public function answers()
-    {
-        return $this->hasMany(Answer::class);
     }
 }

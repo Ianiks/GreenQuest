@@ -529,166 +529,28 @@
             
             // Question bank with questions for each level
             const questionBank = {
-                1: [
-                    {
-                        question: "What is the most effective way to reduce your carbon footprint?",
-                        options: ["Using public transportation", "Planting trees", "Reducing meat consumption", "Using energy-efficient lightbulbs"],
-                        correct: 2
-                    },
-                    {
-                        question: "Which of the following materials takes the longest to decompose?",
-                        options: ["Paper", "Plastic bottles", "Banana peels", "Cotton cloth"],
-                        correct: 1
-                    },
-                    {
-                        question: "What is the main cause of ocean acidification?",
-                        options: ["Plastic pollution", "Oil spills", "Excess carbon dioxide absorption", "Sewage runoff"],
-                        correct: 2
-                    },
-                    {
-                        question: "Which renewable energy source is the most widely used worldwide?",
-                        options: ["Solar power", "Wind power", "Hydroelectric power", "Geothermal energy"],
-                        correct: 2
-                    },
-                    {
-                        question: "What is the 'Great Pacific Garbage Patch' primarily composed of?",
-                        options: ["Industrial waste", "Microplastics", "Discarded fishing gear", "Glass bottles"],
-                        correct: 1
-                    },
-                    {
-                        question: "Which of these actions saves the most water?",
-                        options: ["Taking shorter showers", "Fixing leaky faucets", "Installing low-flow toilets", "Using a broom instead of a hose to clean driveways"],
-                        correct: 1
-                    },
-                    {
-                        question: "What is the leading cause of deforestation worldwide?",
-                        options: ["Urban expansion", "Agriculture", "Logging for timber", "Mining operations"],
-                        correct: 1
-                    },
-                    {
-                        question: "Which gas is primarily responsible for global warming?",
-                        options: ["Oxygen", "Nitrogen", "Carbon dioxide", "Helium"],
-                        correct: 2
-                    },
-                    {
-                        question: "What percentage of the world's water is fresh water?",
-                        options: ["10%", "3%", "25%", "50%"],
-                        correct: 1
-                    },
-                    {
-                        question: "Which of these is NOT a renewable energy source?",
-                        options: ["Solar", "Wind", "Natural gas", "Hydroelectric"],
-                        correct: 2
-                    }
-                ],
-                2: [
-                    {
-                        question: "What is the most recycled material in the world?",
-                        options: ["Paper", "Glass", "Aluminum", "Plastic"],
-                        correct: 2
-                    },
-                    {
-                        question: "Which ecosystem stores the most carbon?",
-                        options: ["Tropical rainforests", "Coral reefs", "Wetlands", "Grasslands"],
-                        correct: 0
-                    },
-                    {
-                        question: "What is the main benefit of using LED light bulbs?",
-                        options: ["They last longer", "They are brighter", "They use less energy", "Both A and C"],
-                        correct: 3
-                    },
-                    {
-                        question: "Which of these is a greenhouse gas?",
-                        options: ["Oxygen", "Nitrogen", "Methane", "Hydrogen"],
-                        correct: 2
-                    },
-                    {
-                        question: "What is the primary purpose of a carbon footprint?",
-                        options: ["To measure water usage", "To calculate waste production", "To estimate greenhouse gas emissions", "To track electricity consumption"],
-                        correct: 2
-                    },
-                    {
-                        question: "What is the main source of marine pollution?",
-                        options: ["Oil spills", "Plastic waste", "Industrial chemicals", "Sewage"],
-                        correct: 1
-                    },
-                    {
-                        question: "Which of these is a renewable resource?",
-                        options: ["Coal", "Natural gas", "Solar energy", "Petroleum"],
-                        correct: 2
-                    },
-                    {
-                        question: "What does 'reduce, reuse, recycle' promote?",
-                        options: ["Waste management", "Energy conservation", "Sustainable living", "All of the above"],
-                        correct: 3
-                    },
-                    {
-                        question: "Which animal is most affected by plastic pollution in oceans?",
-                        options: ["Sea turtles", "Dolphins", "Sea birds", "All of the above"],
-                        correct: 3
-                    },
-                    {
-                        question: "What is composting?",
-                        options: ["Recycling organic waste into fertilizer", "Burning waste for energy", "Sorting recyclables", "None of the above"],
-                        correct: 0
-                    }
-                ],
-                3: [
-                    {
-                        question: "What is the largest source of renewable energy worldwide?",
-                        options: ["Wind power", "Solar power", "Hydroelectric power", "Biomass"],
-                        correct: 2
-                    },
-                    {
-                        question: "Which country is the largest producer of solar energy?",
-                        options: ["United States", "Germany", "China", "Japan"],
-                        correct: 2
-                    },
-                    {
-                        question: "What is the main environmental advantage of electric vehicles?",
-                        options: ["Reduced air pollution", "Lower manufacturing costs", "Faster acceleration", "Longer lifespan"],
-                        correct: 0
-                    },
-                    {
-                        question: "Which of these is a sustainable farming practice?",
-                        options: ["Crop rotation", "Monoculture", "Heavy pesticide use", "Clear-cutting"],
-                        correct: 0
-                    },
-                    {
-                        question: "What is the 'Greenhouse Effect'?",
-                        options: ["The process of growing plants indoors", "The trapping of heat by atmospheric gases", "The effect of green paint on temperature", "A method of composting"],
-                        correct: 1
-                    },
-                    {
-                        question: "Which of these is NOT a fossil fuel?",
-                        options: ["Coal", "Natural gas", "Uranium", "Petroleum"],
-                        correct: 2
-                    },
-                    {
-                        question: "What is the primary cause of coral bleaching?",
-                        options: ["Ocean acidification", "Rising water temperatures", "Pollution", "Overfishing"],
-                        correct: 1
-                    },
-                    {
-                        question: "Which organization is known for its environmental activism?",
-                        options: ["Greenpeace", "Red Cross", "Amnesty International", "Doctors Without Borders"],
-                        correct: 0
-                    },
-                    {
-                        question: "What is the main goal of the Paris Agreement?",
-                        options: ["To reduce plastic waste", "To limit global warming", "To protect endangered species", "To promote renewable energy"],
-                        correct: 1
-                    },
-                    {
-                        question: "Which of these is a biodegradable material?",
-                        options: ["Styrofoam", "Plastic bags", "Paper", "Glass"],
-                        correct: 2
-                    }
-                ],
-                // Additional levels would be defined here
-                4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: []
-            };
-            
+    1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: []
+};
+
+// Populate questionBank from Laravel-provided DB questions
+const dbQuestions = @json($dbQuestionBank ?? []);
+
+
+Object.entries(dbQuestions).forEach(([level, questions]) => {
+    const levelNum = parseInt(level);
+    if (!isNaN(levelNum) && Array.isArray(questions)) {
+        questionBank[levelNum] = questions.map(q => ({
+            question: q.question,
+            options: [q.choice1, q.choice2, q.choice3, q.choice4],
+            correct: q.correct_answer
+        }));
+    }
+});
+
+console.log("Final question bank with DB data:", questionBank);
+
+
+
             // Initialize user progress
             let userProgress = {
                 currentLevel: 1,

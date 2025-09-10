@@ -9,7 +9,9 @@ class Quiz extends Model
     protected $fillable = [
         'title',
         'difficulty',
-        'instructor_id'  // <-- allow mass assignment
+        'level',
+        'access_code',
+        'instructor_id',
     ];
 
     public function instructor()
@@ -22,5 +24,3 @@ class Quiz extends Model
         return $this->hasMany(Question::class);
     }
 }
-
-
