@@ -14,6 +14,16 @@
                     <label for="title" class="form-label">Quiz Title</label>
                     <input type="text" name="title" id="title" class="form-control" required>
                 </div>
+                    {{-- Quiz Category --}}
+                <div class="mb-3">
+                    <label for="category" class="form-label">Category</label>
+                    <select name="category" id="category" class="form-select" required>
+                        <option value="" disabled selected>Select category</option>
+                        <option value="trivia">Trivia (Easy)</option>
+                        <option value="waste">Waste Sorting (Moderate)</option>
+                        <option value="eco_plan">Eco Plan (Difficult)</option>
+                    </select>
+                </div>
 
                 {{-- Quiz Difficulty --}}
                 <div class="mb-3">
@@ -90,9 +100,12 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     let questionIndex = 1;
 
+    // Add new question
     document.getElementById('addQuestionBtn').addEventListener('click', function() {
         const accordion = document.getElementById('questionsAccordion');
 
@@ -140,5 +153,16 @@
             e.target.closest('.accordion-item').remove();
         }
     });
+
+    // SweetAlert Success Message
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: '{{ session('success') }}',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+        });
+    @endif
 </script>
 @endpush

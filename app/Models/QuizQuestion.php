@@ -12,8 +12,6 @@ class QuizQuestion extends Model
     protected $table = 'quizquestions';
 
     protected $fillable = [
-        'category',
-        'title',
         'question',
         'choice1',
         'choice2',
@@ -23,8 +21,11 @@ class QuizQuestion extends Model
         'level',
         'difficulty',
         'access_code',
+        'quiz_id',
+        'category',
+        'title',
         'instructor_id',
     ];
-      public $timestamps = true; // ✅ now created_at and updated_at will auto-fill
 
+    public $timestamps = true; // ✅ now created_at and updated_at will auto-fill
 }

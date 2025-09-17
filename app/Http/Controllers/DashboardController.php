@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Quiz; // make sure you have a Quiz model
+use App\Models\QuizQuestion; // ✅ use QuizQuestion model
 
 class DashboardController extends Controller
 {
@@ -12,20 +12,20 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Fetch quizzes by difficulty
-        $easyQuizzes = Quiz::where('difficulty', 'easy')->get();
-        $moderateQuizzes = Quiz::where('difficulty', 'moderate')->get();
-        $difficultQuizzes = Quiz::where('difficulty', 'difficult')->get();
+        // ✅ Fetch quizzes/questions by difficulty from quizquestions table
+        $easyQuizzes = QuizQuestion::where('difficulty', 'easy')->get();
+        $moderateQuizzes = QuizQuestion::where('difficulty', 'moderate')->get();
+        $difficultQuizzes = QuizQuestion::where('difficulty', 'difficult')->get();
 
         return view('dashboard', [
-            'totalPoints' => $user->points ?? 0,
-            'completedQuests' => $user->completed_quests ?? 0,
-            'upcomingEvents' => 'Tree Planting - June 5',
-            'carbonSaved' => $user->carbon_saved ?? '0 kg',
+            'totalPoints'      => $user->points ?? 0,
+            'completedQuests'  => $user->completed_quests ?? 0,
+            'upcomingEvents'   => 'Tree Planting - June 5',
+            'carbonSaved'      => $user->carbon_saved ?? '0 kg',
 
-            // Pass quizzes to the view
-            'easyQuizzes' => $easyQuizzes,
-            'moderateQuizzes' => $moderateQuizzes,
+            // ✅ Pass quizzes to the view
+            'easyQuizzes'      => $easyQuizzes,
+            'moderateQuizzes'  => $moderateQuizzes,
             'difficultQuizzes' => $difficultQuizzes,
         ]);
     }

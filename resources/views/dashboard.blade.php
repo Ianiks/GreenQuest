@@ -550,9 +550,10 @@
                 </div>
                 
                 <a href="{{ route('profile') }}" class="dropdown-item">
-                    <i class="fas fa-user"></i>
-                    My Profile
-                </a>
+    <i class="fas fa-user"></i>
+    My Profile
+</a>
+
                 <a href="{{ route('account.settings') }}" class="dropdown-item">
                     <i class="fas fa-cog"></i>
                     Account Settings
@@ -627,7 +628,9 @@
             <p class="progress-text">Progress: {{ Auth::user()->trivia_progress }}%</p>
             <div class="game-stats">
                 <span class="game-points">+10 points</span>
-                <a href="{{ route('games.trivia', ['difficulty' => 'easy']) }}" class="game-button">Play Now</a>
+              <a href="{{ route('games.trivia') }}?difficulty=easy" class="game-button">Play Now</a>
+
+
             </div>
         </div>
     </div>
@@ -646,7 +649,7 @@
             <p class="progress-text">Progress: {{ Auth::user()->waste_sorting_progress }}%</p>
             <div class="game-stats">
                 <span class="game-points">+20 points</span>
-                <a href="{{ route('games.waste-sorting', ['difficulty' => 'moderate']) }}" class="game-button">Play Now</a>
+               <a href="{{ route('games.waste-sorting') }}?difficulty=moderate" class="game-button">Play Now</a>
             </div>
         </div>
     </div>
@@ -665,7 +668,7 @@
             <p class="progress-text">Progress: {{ Auth::user()->eco_plan_progress }}%</p>
             <div class="game-stats">
                 <span class="game-points">+30 points</span>
-                <a href="{{ route('games.eco-plan', ['difficulty' => 'difficult']) }}" class="game-button">Play Now</a>
+               <a href="{{ route('games.eco-plan') }}?difficulty=difficult" class="game-button">Play Now</a>
             </div>
         </div>
     </div>

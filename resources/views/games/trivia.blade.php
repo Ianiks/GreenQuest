@@ -458,493 +458,290 @@
         <a href="{{ route('dashboard') }}" class="back-btn">
             <i class="fas fa-arrow-left"></i> Back 
         </a>
-            <h1>Eco-Trivia Challenge</h1>
-            
-            <div class="level-stages" id="levelStages">
-                <!-- Level stages 1-10 will be dynamically inserted here -->
-            </div>
-            
-            <div class="difficulty-selector">
-                <div class="difficulty-btn easy active" data-difficulty="easy">Easy</div>
-            </div>
-            
-            <div class="progress-container">
-                <div class="progress">
-                    <div class="progress-bar" id="progressBar" style="width: 10%"></div>
-                </div>
-                <div class="progress-text" id="progressText">Question 1 of 10</div>
-            </div>
-            
-            <div class="timer-container">
-                <div class="timer" id="timer">
-                    <i class="fas fa-clock"></i>
-                    <span id="timeLeft">20</span> seconds
-                </div>
-                <div class="score-display" id="scoreDisplay">Score: 0</div>
-            </div>
-        </div>
-
-        <form id="triviaForm">
-            <input type="hidden" name="difficulty" value="easy" id="difficultyInput">
-            <input type="hidden" id="currentLevel" value="1">
-            
-            <div id="questionsContainer">
-                <!-- Questions will be dynamically inserted here -->
-            </div>
-        </form>
+        <h1>Eco-Trivia Challenge</h1>
         
-        <!-- Completion Screen (initially hidden) -->
-        <div class="completion-message d-none" id="completionScreen">
-            <i class="fas fa-trophy"></i>
-            <h2>Congratulations!</h2>
-            <p>You've completed Level <span id="completedLevel">1</span> of Eco-Trivia!</p>
-            
-            <div class="points-earned">
-                <i class="fas fa-coins"></i> 
-                <span>You got <span id="pointsEarned">0</span> out of 10 points!</span>
+        <div class="level-stages" id="levelStages"></div>
+        
+        <div class="difficulty-selector">
+            <div class="difficulty-btn easy active" data-difficulty="easy">Easy</div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress">
+                <div class="progress-bar" id="progressBar" style="width: 10%"></div>
             </div>
-            
-            <div class="completion-buttons">
-                <button type="button" class="btn" id="nextLevelButton">
-                    Next Level <i class="fas fa-arrow-right"></i>
-                </button>
-                <button type="button" class="btn" id="restartButton" style="background-color: #f0f0f0; color: #333;">
-                    <i class="fas fa-redo"></i> Play Again
-                </button>
+            <div class="progress-text" id="progressText">Question 1 of 10</div>
+        </div>
+        
+        <div class="timer-container">
+            <div class="timer" id="timer">
+                <i class="fas fa-clock"></i>
+                <span id="timeLeft">20</span> seconds
             </div>
+            <div class="score-display" id="scoreDisplay">Score: 0</div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Show initial warning
-            Swal.fire({
-                title: 'Attention!',
-                html: 'Do not attempt to refresh or exit this page until you\'ve finished all the questions.',
-                icon: 'warning',
-                confirmButtonColor: '#2e7d32',
-                confirmButtonText: 'I Understand'
-            });
-            
-            // Question bank with questions for each level
-            const questionBank = {
-    1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: []
-};
+    <form id="triviaForm">
+        <input type="hidden" name="difficulty" value="easy" id="difficultyInput">
+        <input type="hidden" id="currentLevel" value="1">
+        
+        <div id="questionsContainer"></div>
+    </form>
+    
+    <!-- Completion Screen -->
+    <div class="completion-message d-none" id="completionScreen">
+        <i class="fas fa-trophy"></i>
+        <h2>Congratulations!</h2>
+        <p>You've completed Level <span id="completedLevel">1</span> of Trivia!</p>
+        
+        <div class="points-earned">
+            <i class="fas fa-coins"></i> 
+            <span>You got <span id="pointsEarned">0</span> out of 10 points!</span>
+        </div>
+        
+        <div class="completion-buttons">
+            <button type="button" class="btn" id="nextLevelButton">
+                Next Level <i class="fas fa-arrow-right"></i>
+            </button>
+            <button type="button" class="btn" id="restartButton" style="background-color: #f0f0f0; color: #333;">
+                <i class="fas fa-redo"></i> Play Again
+            </button>
+        </div>
+    </div>
+   </div>
 
-// Populate questionBank from Laravel-provided DB questions
-const dbQuestions = @json($dbQuestionBank ?? []);
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+   <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        Swal.fire({
+            title: 'Attention!',
+            html: 'Do not refresh or exit until you finish all questions.',
+            icon: 'warning',
+            confirmButtonColor: '#2e7d32',
+            confirmButtonText: 'I Understand'
+        });
 
-
+        const questionBank = {1:[],2:[],3:[],4:[],5:[],6:[],7:[],8:[],9:[],10:[]};
+  const dbQuestions = @json($dbQuestionBank ?? []);
 Object.entries(dbQuestions).forEach(([level, questions]) => {
     const levelNum = parseInt(level);
     if (!isNaN(levelNum) && Array.isArray(questions)) {
         questionBank[levelNum] = questions.map(q => ({
             question: q.question,
             options: [q.choice1, q.choice2, q.choice3, q.choice4],
-            correct: q.correct_answer
+            correct: parseInt(q.correct_answer) - 1
         }));
     }
 });
 
-console.log("Final question bank with DB data:", questionBank);
 
+        let userProgress = { currentLevel: 1, unlockedLevels: 1, scores: {} };
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timerInterval;
+        let timeLeft = 20;
 
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const triviaForm = document.getElementById('triviaForm');
+        const questionsContainer = document.getElementById('questionsContainer');
+        const completionScreen = document.getElementById('completionScreen');
+        const levelStagesContainer = document.getElementById('levelStages');
+        const timerElement = document.getElementById('timer');
+        const timeLeftElement = document.getElementById('timeLeft');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const pointsEarned = document.getElementById('pointsEarned');
+        const restartButton = document.getElementById('restartButton');
+        const nextLevelButton = document.getElementById('nextLevelButton');
+        const currentLevelInput = document.getElementById('currentLevel');
+        const completedLevelSpan = document.getElementById('completedLevel');
 
-            // Initialize user progress
-            let userProgress = {
-                currentLevel: 1,
-                unlockedLevels: 1,
-                scores: {}
-            };
-            
-            let currentQuestions = [];
-            let currentQuestionIndex = 0;
-            let score = 0;
-            let timerInterval;
-            let timeLeft = 20;
-            let isQuizCompleted = false;
-            
-            const progressBar = document.getElementById('progressBar');
-            const progressText = document.getElementById('progressText');
-            const triviaForm = document.getElementById('triviaForm');
-            const questionsContainer = document.getElementById('questionsContainer');
-            const completionScreen = document.getElementById('completionScreen');
-            const levelStagesContainer = document.getElementById('levelStages');
-            const timerElement = document.getElementById('timer');
-            const timeLeftElement = document.getElementById('timeLeft');
-            const scoreDisplay = document.getElementById('scoreDisplay');
-            const pointsEarned = document.getElementById('pointsEarned');
-            const restartButton = document.getElementById('restartButton');
-            const nextLevelButton = document.getElementById('nextLevelButton');
-            const currentLevelInput = document.getElementById('currentLevel');
-            const completedLevelSpan = document.getElementById('completedLevel');
-            
-            // Initialize the game
-            initGame();
-            
-            // Handle beforeunload event
-            window.addEventListener('beforeunload', function (e) {
-                if (!isQuizCompleted) {
-                    e.preventDefault();
-                    e.returnValue = 'Are you sure you want to exit this page? Your scores will be sent directly to your instructor.';
-                    
-                    // Show confirmation dialog
-                    Swal.fire({
-                        title: 'Are you sure?',
-                        html: 'Your scores will be sent directly to your instructor if you exit now.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#2e7d32',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Yes, exit page',
-                        cancelButtonText: 'Stay on page'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // User confirmed exit, allow the page to unload
-                            isQuizCompleted = true;
-                            window.removeEventListener('beforeunload', arguments.callee);
-                            window.close();
-                        }
-                    });
-                    
-                    return e.returnValue;
-                }
-            });
-            
-            function initGame() {
-                // Load user progress from storage
-                loadUserProgress();
-                
-                // Generate level stages
-                generateLevelStages();
-                
-                // Start the current level
-                startLevel(userProgress.currentLevel);
-            }
-            
-            function loadUserProgress() {
-                // In a real app, this would load from a database or localStorage
-                const savedProgress = localStorage.getItem('ecoTriviaProgress');
-                if (savedProgress) {
-                    userProgress = JSON.parse(savedProgress);
-                }
-            }
-            
-            function saveUserProgress() {
-                // Save progress to localStorage
-                localStorage.setItem('ecoTriviaProgress', JSON.stringify(userProgress));
-            }
-            
-            function generateLevelStages() {
-                levelStagesContainer.innerHTML = '';
-                
-                for (let i = 1; i <= 10; i++) {
-                    const levelStage = document.createElement('div');
-                    levelStage.className = 'level-stage';
-                    levelStage.textContent = i;
-                    levelStage.dataset.level = i;
-                    
-                    // Mark completed levels
-                    if (userProgress.scores[i] >= 5) {
-                        levelStage.classList.add('completed');
-                    }
-                    
-                    // Mark locked levels
-                    if (i > userProgress.unlockedLevels) {
-                        levelStage.classList.add('locked');
-                    }
-                    
-                    // Mark active level
-                    if (i === userProgress.currentLevel) {
-                        levelStage.classList.add('active');
-                    }
-                    
-                    // Add click event to unlocked levels
-                    if (i <= userProgress.unlockedLevels) {
-                        levelStage.addEventListener('click', function() {
+        initGame();
+
+        function initGame() {
+            loadUserProgress();
+            generateLevelStages();
+            startLevel(userProgress.currentLevel);
+        }
+
+        function loadUserProgress() {
+            const saved = localStorage.getItem('triviaProgress');
+            if (saved) userProgress = JSON.parse(saved);
+        }
+        function saveUserProgress() {
+            localStorage.setItem('triviaProgress', JSON.stringify(userProgress));
+        }
+
+       function generateLevelStages() {
+    levelStagesContainer.innerHTML = '';
+    for (let i = 1; i <= 10; i++) {
+        const stage = document.createElement('div');
+        stage.className = 'level-stage';
+        stage.textContent = i;
+        stage.dataset.level = i;
+
+        if (userProgress.scores[i] >= 5) stage.classList.add('completed');
+        if (i > userProgress.unlockedLevels) stage.classList.add('locked');
+        if (i === userProgress.currentLevel) stage.classList.add('active');
+
+        // ✅ Allow clicking both unlocked & locked levels
+        stage.addEventListener('click', () => {
+            if (i <= userProgress.unlockedLevels) {
+                startLevel(i); // normal start
+            } else {
+                // ✅ Locked: require access code
+                Swal.fire({
+                    title: 'Enter Access Code',
+                    input: 'text',
+                    inputPlaceholder: 'Enter code to unlock level ' + i,
+                    showCancelButton: true,
+                    confirmButtonText: 'Unlock',
+                    confirmButtonColor: '#2e7d32'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        const code = result.value;
+                        // 🔑 Replace this check with DB/API validation if needed
+                        if (code === 'LEVEL' + i) { 
+                            userProgress.unlockedLevels = i;
+                            saveUserProgress();
+                            generateLevelStages();
                             startLevel(i);
-                        });
-                    }
-                    
-                    levelStagesContainer.appendChild(levelStage);
-                }
-            }
-            
-            function startLevel(level) {
-                // Update current level
-                userProgress.currentLevel = level;
-                currentLevelInput.value = level;
-                saveUserProgress();
-                
-                // Reset game state
-                currentQuestionIndex = 0;
-                score = 0;
-                scoreDisplay.textContent = `Score: ${score}`;
-                
-                // Hide completion screen
-                completionScreen.classList.add('d-none');
-                triviaForm.classList.remove('d-none');
-                
-                // Get questions for this level
-                currentQuestions = questionBank[level] || getRandomQuestions(questionBank[1], 10);
-                
-                // Generate question cards
-                generateQuestionCards();
-                
-                // Show first question
-                showQuestion(0);
-                
-                // Start timer for first question
-                startTimer();
-                
-                // Update level stages
-                generateLevelStages();
-            }
-            
-            function getRandomQuestions(questions, count) {
-                const shuffled = [...questions].sort(() => 0.5 - Math.random());
-                return shuffled.slice(0, count);
-            }
-            
-            function generateQuestionCards() {
-                questionsContainer.innerHTML = '';
-                
-                currentQuestions.forEach((question, index) => {
-                    const questionCard = document.createElement('div');
-                    questionCard.className = `question-card ${index === 0 ? '' : 'd-none'}`;
-                    questionCard.dataset.question = index;
-                    
-                    const questionHTML = `
-                        <div class="question">${question.question}</div>
-                        <div class="options">
-                            ${question.options.map((option, i) => `
-                                <label class="option" for="option_${index}_${i}">
-                                    <input type="radio" name="answer_${index}" id="option_${index}_${i}" value="${i}" required>
-                                    <span class="option-content">
-                                        <span class="option-letter">${String.fromCharCode(65 + i)}</span>
-                                        <span class="option-text">${option}</span>
-                                    </span>
-                                </label>
-                            `).join('')}
-                        </div>
-                        <div class="navigation-buttons">
-                            ${index > 0 ? `
-                                <button type="button" class="btn prev-btn">
-                                    <i class="fas fa-chevron-left"></i> Previous
-                                </button>
-                            ` : ''}
-                            ${index < currentQuestions.length - 1 ? `
-                                <button type="button" class="btn next-btn">
-                                    Next <i class="fas fa-chevron-right"></i>
-                                </button>
-                            ` : `
-                                <button type="submit" class="btn submit-btn">
-                                    <i class="fas fa-check-circle"></i> Submit Answers
-                                </button>
-                            `}
-                        </div>
-                    `;
-                    
-                    questionCard.innerHTML = questionHTML;
-                    questionsContainer.appendChild(questionCard);
-                });
-                
-                // Add event listeners to navigation buttons
-                document.querySelectorAll('.next-btn').forEach(button => {
-                    button.addEventListener('click', function () {
-                        clearInterval(timerInterval);
-                        navigateQuestions(1);
-                    });
-                });
-                
-                document.querySelectorAll('.prev-btn').forEach(button => {
-                    button.addEventListener('click', function () {
-                        clearInterval(timerInterval);
-                        navigateQuestions(-1);
-                    });
-                });
-                
-                // Handle option selection highlight
-                document.querySelectorAll('.options').forEach(container => {
-                    container.addEventListener('click', function (e) {
-                        const option = e.target.closest('.option');
-                        if (option) {
-                            // Remove selected from all options in this group
-                            container.querySelectorAll('.option').forEach(opt => {
-                                opt.classList.remove('selected');
-                            });
-                            // Add selected to clicked option
-                            option.classList.add('selected');
-                            
-                            // Automatically check the radio input
-                            const radio = option.querySelector('input[type="radio"]');
-                            if (radio) {
-                                radio.checked = true;
-                            }
+                            Swal.fire('Unlocked!', 'You may now play Level ' + i, 'success');
+                        } else {
+                            Swal.fire('Invalid Code', 'Please try again', 'error');
                         }
-                    });
+                    }
                 });
             }
-            
-            function showQuestion(index) {
-                // Update progress bar
-                const progress = ((index + 1) / currentQuestions.length) * 100;
-                progressBar.style.width = `${progress}%`;
-                progressText.textContent = `Question ${index + 1} of ${currentQuestions.length}`;
-                
-                // Update level stage
-                document.querySelectorAll('.level-stage').forEach(stage => {
-                    stage.classList.remove('active');
-                });
-                document.querySelector(`.level-stage[data-level="${userProgress.currentLevel}"]`).classList.add('active');
-                
-                // Reset and start timer
-                timeLeft = 20;
-                timeLeftElement.textContent = timeLeft;
-                timerElement.classList.remove('warning', 'danger');
-                startTimer();
-            }
-            
-            function startTimer() {
-                clearInterval(timerInterval);
-                
-                timerInterval = setInterval(() => {
-                    timeLeft--;
-                    timeLeftElement.textContent = timeLeft;
-                    
-                    // Change color when time is running out
-                    if (timeLeft <= 5) {
-                        timerElement.classList.add('warning');
-                    }
-                    if (timeLeft <= 3) {
-                        timerElement.classList.add('danger');
-                    }
-                    
-                    // Time's up!
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        timeUp();
-                    }
-                }, 1000);
-            }
-            
-            function timeUp() {
-                // Auto-select the next question after a brief delay
-                setTimeout(() => {
-                    if (currentQuestionIndex < currentQuestions.length - 1) {
-                        navigateQuestions(1);
-                    } else {
-                        // If it's the last question, submit the form
-                        triviaForm.dispatchEvent(new Event('submit'));
-                    }
-                }, 1000);
-            }
-            
-            function navigateQuestions(direction) {
-                const newIndex = currentQuestionIndex + direction;
-                
-                if (newIndex >= 0 && newIndex < currentQuestions.length) {
-                    document.querySelector(`.question-card[data-question="${currentQuestionIndex}"]`).classList.add('d-none');
-                    document.querySelector(`.question-card[data-question="${newIndex}"]`).classList.remove('d-none');
-                    
-                    currentQuestionIndex = newIndex;
-                    showQuestion(currentQuestionIndex);
-                    
-                    // Scroll to top of question
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
-                }
-            }
-            
-            // Form submission
-            triviaForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                clearInterval(timerInterval);
-                
-                // Calculate score
-                calculateScore();
-                
-                // Save score for this level
-                userProgress.scores[userProgress.currentLevel] = score;
-                
-                // Check if user unlocked next level
-                if (score >= 5 && userProgress.currentLevel === userProgress.unlockedLevels && userProgress.unlockedLevels < 10) {
-                    userProgress.unlockedLevels++;
-                }
-                
-                // Save progress
-                saveUserProgress();
-                
-                // Show completion screen
-                triviaForm.classList.add('d-none');
-                completionScreen.classList.remove('d-none');
-                
-                // Update completion screen
-                completedLevelSpan.textContent = userProgress.currentLevel;
-                pointsEarned.textContent = score;
-                
-                // Show appropriate message
-                if (score >= 5) {
-                    if (userProgress.currentLevel < 10) {
-                        Swal.fire({
-                            title: 'Level Complete!',
-                            html: `You scored ${score} out of 10!<br>Next level unlocked!`,
-                            icon: 'success',
-                            confirmButtonColor: '#2e7d32'
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Congratulations!',
-                            html: `You've completed all levels with a score of ${score} out of 10!`,
-                            icon: 'success',
-                            confirmButtonColor: '#2e7d32'
-                        });
-                        // Mark quiz as completed to allow exit without warning
-                        isQuizCompleted = true;
-                    }
-                } else {
-                    Swal.fire({
-                        title: 'Try Again',
-                        html: `You scored ${score} out of 10.<br>You need at least 5 points to unlock the next level.`,
-                        icon: 'info',
-                        confirmButtonColor: '#2e7d32'
-                    });
-                }
+        });
+
+        levelStagesContainer.appendChild(stage);
+    }
+}
+
+        function startLevel(level) {
+            userProgress.currentLevel = level;
+            currentLevelInput.value = level;
+            saveUserProgress();
+            currentQuestionIndex = 0;
+            score = 0;
+            scoreDisplay.textContent = `Score: ${score}`;
+            completionScreen.classList.add('d-none');
+            triviaForm.classList.remove('d-none');
+            currentQuestions = questionBank[level] || [];
+            generateQuestions();
+            showQuestion(0);
+            startTimer();
+            generateLevelStages();
+        }
+
+        function generateQuestions() {
+            questionsContainer.innerHTML = '';
+            currentQuestions.forEach((q, idx) => {
+                const card = document.createElement('div');
+                card.className = `question-card ${idx===0?'':'d-none'}`;
+                card.dataset.question = idx;
+                card.innerHTML = `
+                    <div class="question">${q.question}</div>
+                    <div class="options">
+                        ${q.options.map((opt,i)=>`
+                            <label class="option" for="option_${idx}_${i}">
+                                <input type="radio" name="answer_${idx}" id="option_${idx}_${i}" value="${i}" required>
+                                <span class="option-content">
+                                    <span class="option-letter">${String.fromCharCode(65+i)}</span>
+                                    <span class="option-text">${opt}</span>
+                                </span>
+                            </label>`).join('')}
+                    </div>
+                    <div class="navigation-buttons">
+                        ${idx>0?`<button type="button" class="btn prev-btn"><i class="fas fa-chevron-left"></i> Previous</button>`:''}
+                        ${idx<currentQuestions.length-1?
+                            `<button type="button" class="btn next-btn">Next <i class="fas fa-chevron-right"></i></button>`:
+                            `<button type="submit" class="btn submit-btn"><i class="fas fa-check-circle"></i> Submit Answers</button>`}
+                    </div>`;
+                questionsContainer.appendChild(card);
             });
-            
-      function calculateScore() {
-    score = 0;
-    
-    currentQuestions.forEach((question, index) => {
-        const selectedOption = document.querySelector(`input[name="answer_${index}"]:checked`);
-        
-        // FIXED: Properly compare the selected value with the correct answer
-        if (selectedOption) {
-            const selectedValue = parseInt(selectedOption.value);
-            if (selectedValue === question.correct) {
-                score += 1;
+            document.querySelectorAll('.next-btn').forEach(btn=>btn.addEventListener('click',()=>{clearInterval(timerInterval);navigate(1)}));
+            document.querySelectorAll('.prev-btn').forEach(btn=>btn.addEventListener('click',()=>{clearInterval(timerInterval);navigate(-1)}));
+            document.querySelectorAll('.options').forEach(c=>c.addEventListener('click',e=>{
+                const opt = e.target.closest('.option');
+                if(opt){
+                    c.querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                    const radio = opt.querySelector('input'); if(radio) radio.checked = true;
+                }
+            }));
+        }
+
+        function showQuestion(idx) {
+            progressBar.style.width = `${((idx+1)/currentQuestions.length)*100}%`;
+            progressText.textContent = `Question ${idx+1} of ${currentQuestions.length}`;
+            document.querySelectorAll('.level-stage').forEach(s=>s.classList.remove('active'));
+            document.querySelector(`.level-stage[data-level="${userProgress.currentLevel}"]`).classList.add('active');
+            timeLeft = 20;
+            timeLeftElement.textContent = timeLeft;
+            timerElement.classList.remove('warning','danger');
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(()=>{
+                timeLeft--;
+                timeLeftElement.textContent = timeLeft;
+                if(timeLeft<=5) timerElement.classList.add('warning');
+                if(timeLeft<=3) timerElement.classList.add('danger');
+                if(timeLeft<=0){clearInterval(timerInterval); timeUp();}
+            },1000);
+        }
+
+        function timeUp(){
+            setTimeout(()=>{
+                if(currentQuestionIndex<currentQuestions.length-1) navigate(1);
+                else triviaForm.dispatchEvent(new Event('submit'));
+            },1000);
+        }
+
+        function navigate(dir){
+            const newIdx = currentQuestionIndex+dir;
+            if(newIdx>=0 && newIdx<currentQuestions.length){
+                document.querySelector(`.question-card[data-question="${currentQuestionIndex}"]`).classList.add('d-none');
+                document.querySelector(`.question-card[data-question="${newIdx}"]`).classList.remove('d-none');
+                currentQuestionIndex = newIdx;
+                showQuestion(currentQuestionIndex);
+                window.scrollTo({top:0,behavior:'smooth'});
             }
         }
-    });
-    
-    scoreDisplay.textContent = `Score: ${score}`;
-}
-            
-            // Next level button handler
-            nextLevelButton.addEventListener('click', function() {
-                if (userProgress.currentLevel < 10 && userProgress.unlockedLevels > userProgress.currentLevel) {
-                    startLevel(userProgress.currentLevel + 1);
-                }
+
+        triviaForm.addEventListener('submit',e=>{
+            e.preventDefault(); clearInterval(timerInterval);
+            score = 0;
+            currentQuestions.forEach((q,idx)=>{
+                const selected = document.querySelector(`input[name="answer_${idx}"]:checked`);
+                if(selected && parseInt(selected.value)===q.correct) score++;
             });
-            
-            // Restart button handler
-            restartButton.addEventListener('click', function() {
-                startLevel(userProgress.currentLevel);
-            });
+            scoreDisplay.textContent = `Score: ${score}`;
+            userProgress.scores[userProgress.currentLevel] = score;
+            if(score>=5 && userProgress.currentLevel===userProgress.unlockedLevels && userProgress.unlockedLevels<10){
+                userProgress.unlockedLevels++;
+            }
+            saveUserProgress();
+            triviaForm.classList.add('d-none');
+            completionScreen.classList.remove('d-none');
+            completedLevelSpan.textContent = userProgress.currentLevel;
+            pointsEarned.textContent = score;
+            if(score>=5){
+                Swal.fire({title:'Level Complete!',html:`You scored ${score}/10!<br>Next level unlocked!`,icon:'success',confirmButtonColor:'#2e7d32'});
+            }else{
+                Swal.fire({title:'Try Again',html:`You scored ${score}/10.<br>You need at least 5 points to unlock the next level.`,icon:'info',confirmButtonColor:'#2e7d32'});
+            }
         });
-    </script>
+
+        nextLevelButton.addEventListener('click',()=>{if(userProgress.currentLevel<10 && userProgress.unlockedLevels>userProgress.currentLevel) startLevel(userProgress.currentLevel+1)});
+        restartButton.addEventListener('click',()=>startLevel(userProgress.currentLevel));
+    });
+   </script>
 </body>
 </html>

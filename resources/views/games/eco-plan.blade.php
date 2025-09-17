@@ -483,503 +483,287 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Question bank with 15 questions (10 will be randomly selected)
-            const questionBank = [
-                {
-                    question: "Which of these is the most effective strategy for reducing carbon emissions in urban areas?",
-                    options: ["Expanding highway systems", "Implementing congestion pricing", "Increasing parking availability", "Building more shopping malls"],
-                    correct: 1
-                },
-                {
-                    question: "What is the primary benefit of implementing a circular economy model?",
-                    options: ["Increased GDP growth", "Reduced resource extraction and waste", "Higher corporate profits", "More product variety for consumers"],
-                    correct: 1
-                },
-                {
-                    question: "Which renewable energy source has the highest capacity factor?",
-                    options: ["Solar photovoltaic", "Wind power", "Geothermal energy", "Hydropower"],
-                    correct: 3
-                },
-                {
-                    question: "What is the most significant barrier to widespread adoption of electric vehicles?",
-                    options: ["Vehicle performance", "Consumer preferences", "Charging infrastructure", "Vehicle design"],
-                    correct: 2
-                },
-                {
-                    question: "Which policy is most effective for reducing single-use plastic consumption?",
-                    options: ["Public awareness campaigns", "Extended producer responsibility laws", "Plastic bag taxes", "Recycling improvements"],
-                    correct: 1
-                },
-                {
-                    question: "What is the primary environmental benefit of urban green spaces?",
-                    options: ["Aesthetic improvement", "Carbon sequestration and air purification", "Increased property values", "Recreational opportunities"],
-                    correct: 1
-                },
-                {
-                    question: "Which approach is most effective for sustainable water management?",
-                    options: ["Building more dams", "Desalination plants", "Water conservation and efficiency measures", "Groundwater extraction"],
-                    correct: 2
-                },
-                {
-                    question: "What is the key principle of biomimicry in sustainable design?",
-                    options: ["Using natural materials", "Imitating natural forms", "Emulating nature's time-tested patterns and strategies", "Incorporating living plants into structures"],
-                    correct: 2
-                },
-                {
-                    question: "Which factor is most critical for successful implementation of sustainable agriculture?",
-                    options: ["Government subsidies", "Soil health management", "Large farm size", "Export markets"],
-                    correct: 1
-                },
-                {
-                    question: "What is the primary advantage of district energy systems?",
-                    options: ["Lower installation costs", "Improved energy efficiency through centralized production", "Easier maintenance", "Simpler billing systems"],
-                    correct: 1
-                },
-                {
-                    question: "Which strategy is most effective for reducing food waste?",
-                    options: ["Improved storage technology", "Consumer education", "Standardized date labeling", "Comprehensive approach from production to consumption"],
-                    correct: 3
-                },
-                {
-                    question: "What is the most significant benefit of green building certification systems like LEED?",
-                    options: ["Marketing advantage", "Comprehensive framework for sustainability performance", "Tax incentives", "Faster permitting process"],
-                    correct: 1
-                },
-                {
-                    question: "Which transportation mode has the lowest carbon footprint per passenger-kilometer?",
-                    options: ["Electric car", "Bus transit", "Electric bicycle", "High-speed rail"],
-                    correct: 2
-                },
-                {
-                    question: "What is the primary environmental benefit of implementing a carbon tax?",
-                    options: ["Generating government revenue", "Creating price signals that incentivize emission reductions", "Funding renewable energy projects", "Penalizing polluting industries"],
-                    correct: 1
-                },
-                {
-                    question: "Which approach is most effective for protecting biodiversity?",
-                    options: ["Creating isolated protected areas", "Establishing wildlife corridors between protected areas", "Captive breeding programs", "Public education campaigns"],
-                    correct: 1
-                }
-            ];
-            
-            // Initialize user progress
-            let userProgress = {
-                eco_plan_progress: 0,
-                points: 0
-            };
-            
-            let currentQuestions = [];
-            let currentQuestionIndex = 0;
-            let score = 0;
-            let timerInterval;
-            let timeLeft = 20;
-            
-            const progressBar = document.getElementById('progressBar');
-            const progressText = document.getElementById('progressText');
-            const triviaForm = document.getElementById('triviaForm');
-            const questionsContainer = document.getElementById('questionsContainer');
-            const completionScreen = document.getElementById('completionScreen');
-            const continueButton = document.getElementById('continueButton');
-            const difficultyInput = document.getElementById('difficultyInput');
-            const difficultyButtons = document.querySelectorAll('.difficulty-btn');
-            const backButton = document.getElementById('backButton');
-            const dashboardButton = document.getElementById('dashboardButton');
-            const restartButton = document.getElementById('restartButton');
-            const timerElement = document.getElementById('timer');
-            const timeLeftElement = document.getElementById('timeLeft');
-            const scoreDisplay = document.getElementById('scoreDisplay');
-            const pointsEarned = document.getElementById('pointsEarned');
-            
-            // Initialize the game
-            initGame();
-            
-            function initGame() {
-                // Reset game state
-                currentQuestionIndex = 0;
-                score = 0;
-                scoreDisplay.textContent = `Score: ${score}`;
-                
-                // Select 10 random questions
-                currentQuestions = getRandomQuestions(questionBank, 10);
-                
-                // Generate question cards
-                generateQuestionCards();
-                
-                // Show first question
-                showQuestion(0);
-                
-                // Start timer for first question
-                startTimer();
-            }
-            
-            function getRandomQuestions(questions, count) {
-                const shuffled = [...questions].sort(() => 0.5 - Math.random());
-                return shuffled.slice(0, count);
-            }
-            
-            function generateQuestionCards() {
-                questionsContainer.innerHTML = '';
-                
-                currentQuestions.forEach((question, index) => {
-                    const questionCard = document.createElement('div');
-                    questionCard.className = `question-card ${index === 0 ? '' : 'd-none'}`;
-                    questionCard.dataset.question = index;
-                    
-                    const questionHTML = `
-                        <div class="question">${question.question}</div>
-                        <div class="options">
-                            ${question.options.map((option, i) => `
-                                <label class="option" for="option_${index}_${i}">
-                                    <input type="radio" name="answer_${index}" id="option_${index}_${i}" value="${i}" required>
-                                    <span class="option-content">
-                                        <span class="option-letter">${String.fromCharCode(65 + i)}</span>
-                                        <span class="option-text">${option}</span>
-                                    </span>
-                                </label>
-                            `).join('')}
-                        </div>
-                        <div class="navigation-buttons">
-                            ${index > 0 ? `
-                                <button type="button" class="btn prev-btn">
-                                    <i class="fas fa-chevron-left"></i> Previous
-                                </button>
-                            ` : ''}
-                            ${index < currentQuestions.length - 1 ? `
-                                <button type="button" class="btn next-btn">
-                                    Next <i class="fas fa-chevron-right"></i>
-                                </button>
-                            ` : `
-                                <button type="submit" class="btn submit-btn">
-                                    <i class="fas fa-check-circle"></i> Submit Answers
-                                </button>
-                            `}
-                        </div>
-                    `;
-                    
-                    questionCard.innerHTML = questionHTML;
-                    questionsContainer.appendChild(questionCard);
-                });
-                
-                // Add event listeners to navigation buttons
-                document.querySelectorAll('.next-btn').forEach(button => {
-                    button.addEventListener('click', function () {
-                        clearInterval(timerInterval);
-                        navigateQuestions(1);
-                    });
-                });
-                
-                document.querySelectorAll('.prev-btn').forEach(button => {
-                    button.addEventListener('click', function () {
-                        clearInterval(timerInterval);
-                        navigateQuestions(-1);
-                    });
-                });
-                
-                // Handle option selection highlight
-                document.querySelectorAll('.options').forEach(container => {
-                    container.addEventListener('click', function (e) {
-                        const option = e.target.closest('.option');
-                        if (option) {
-                            // Remove selected from all options in this group
-                            container.querySelectorAll('.option').forEach(opt => {
-                                opt.classList.remove('selected');
-                            });
-                            // Add selected to clicked option
-                            option.classList.add('selected');
-                            
-                            // Automatically check the radio input
-                            const radio = option.querySelector('input[type="radio"]');
-                            if (radio) {
-                                radio.checked = true;
-                            }
-                        }
-                    });
-                });
-            }
-            
-            function showQuestion(index) {
-                // Update progress bar
-                const progress = ((index + 1) / currentQuestions.length) * 100;
-                progressBar.style.width = `${progress}%`;
-                progressText.textContent = `Question ${index + 1} of ${currentQuestions.length}`;
-                
-                // Reset and start timer
-                timeLeft = 20;
-                timeLeftElement.textContent = timeLeft;
-                timerElement.classList.remove('warning', 'danger');
-                startTimer();
-            }
-            
-            function startTimer() {
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize user progress
+    let userProgress = {
+        eco_plan_progress: 0,
+        points: 0
+    };
+
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timerInterval;
+    let timeLeft = 20;
+
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const triviaForm = document.getElementById('triviaForm');
+    const questionsContainer = document.getElementById('questionsContainer');
+    const completionScreen = document.getElementById('completionScreen');
+    const continueButton = document.getElementById('continueButton');
+    const difficultyInput = document.getElementById('difficultyInput');
+    const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+    const restartButton = document.getElementById('restartButton');
+    const timerElement = document.getElementById('timer');
+    const timeLeftElement = document.getElementById('timeLeft');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const pointsEarned = document.getElementById('pointsEarned');
+
+    // Fetch questions from DB (Laravel route example)
+   async function fetchQuestions() {
+    const accessCode = prompt("Enter Access Code to Play:");
+
+    try {
+        const response = await fetch(`/fetch-questions/difficult/${accessCode}`);
+        const data = await response.json();
+
+        if (data.error) {
+            Swal.fire({
+                title: "Access Denied",
+                text: data.error,
+                icon: "error",
+                confirmButtonColor: "#7b1fa2"
+            });
+            return;
+        }
+
+        // Flatten and process questions same as before
+        currentQuestions = [];
+        for (const [level, questions] of Object.entries(data)) {
+            questions.forEach(q => {
+                currentQuestions.push({ ...q, level: level });
+            });
+        }
+
+        currentQuestions = getRandomQuestions(currentQuestions, 10);
+        initGame();
+
+    } catch (error) {
+        console.error("Error fetching questions:", error);
+        Swal.fire({
+            title: "Error",
+            text: "Unable to fetch questions from database.",
+            icon: "error",
+            confirmButtonColor: "#7b1fa2"
+        });
+    }
+}
+
+
+    function initGame() {
+        currentQuestionIndex = 0;
+        score = 0;
+        scoreDisplay.textContent = `Score: ${score}`;
+
+        generateQuestionCards();
+        showQuestion(0);
+        startTimer();
+    }
+
+    function getRandomQuestions(questions, count) {
+        const shuffled = [...questions].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, count);
+    }
+
+    function generateQuestionCards() {
+        questionsContainer.innerHTML = '';
+
+        currentQuestions.forEach((question, index) => {
+            const questionCard = document.createElement('div');
+            questionCard.className = `question-card ${index === 0 ? '' : 'd-none'}`;
+            questionCard.dataset.question = index;
+
+            const questionHTML = `
+                <div class="question">${question.question}</div>
+                <div class="options">
+                    ${JSON.parse(question.options).map((option, i) => `
+                        <label class="option" for="option_${index}_${i}">
+                            <input type="radio" name="answer_${index}" id="option_${index}_${i}" value="${i}" required>
+                            <span class="option-content">
+                                <span class="option-letter">${String.fromCharCode(65 + i)}</span>
+                                <span class="option-text">${option}</span>
+                            </span>
+                        </label>
+                    `).join('')}
+                </div>
+                <div class="navigation-buttons">
+                    ${index > 0 ? `
+                        <button type="button" class="btn prev-btn">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                    ` : ''}
+                    ${index < currentQuestions.length - 1 ? `
+                        <button type="button" class="btn next-btn">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                    ` : `
+                        <button type="submit" class="btn submit-btn">
+                            <i class="fas fa-check-circle"></i> Submit Answers
+                        </button>
+                    `}
+                </div>
+            `;
+
+            questionCard.innerHTML = questionHTML;
+            questionsContainer.appendChild(questionCard);
+        });
+
+        document.querySelectorAll('.next-btn').forEach(button => {
+            button.addEventListener('click', function () {
                 clearInterval(timerInterval);
-                
-                timerInterval = setInterval(() => {
-                    timeLeft--;
-                    timeLeftElement.textContent = timeLeft;
-                    
-                    // Change color when time is running out
-                    if (timeLeft <= 5) {
-                        timerElement.classList.add('warning');
-                    }
-                    if (timeLeft <= 3) {
-                        timerElement.classList.add('danger');
-                    }
-                    
-                    // Time's up!
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        timeUp();
-                    }
-                }, 1000);
-            }
-            
-            function timeUp() {
-                // Auto-select the next question after a brief delay
-                setTimeout(() => {
-                    if (currentQuestionIndex < currentQuestions.length - 1) {
-                        navigateQuestions(1);
-                    } else {
-                        // If it's the last question, submit the form
-                        triviaForm.dispatchEvent(new Event('submit'));
-                    }
-                }, 1000);
-            }
-            
-            function navigateQuestions(direction) {
-                const newIndex = currentQuestionIndex + direction;
-                
-                if (newIndex >= 0 && newIndex < currentQuestions.length) {
-                    document.querySelector(`.question-card[data-question="${currentQuestionIndex}"]`).classList.add('d-none');
-                    document.querySelector(`.question-card[data-question="${newIndex}"]`).classList.remove('d-none');
-                    
-                    currentQuestionIndex = newIndex;
-                    showQuestion(currentQuestionIndex);
-                    
-                    // Scroll to top of question
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
-                }
-            }
-            
-            // Keyboard navigation
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'ArrowRight' && currentQuestionIndex < currentQuestions.length - 1) {
-                    clearInterval(timerInterval);
-                    navigateQuestions(1);
-                } else if (e.key === 'ArrowLeft' && currentQuestionIndex > 0) {
-                    clearInterval(timerInterval);
-                    navigateQuestions(-1);
-                }
-            });
-            
-            // Form submission
-            triviaForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                clearInterval(timerInterval);
-                
-                // Calculate score
-                calculateScore();
-                
-                // Show completion screen
-                triviaForm.classList.add('d-none');
-                completionScreen.classList.remove('d-none');
-                
-                // Update points display
-                pointsEarned.textContent = score;
-                
-                // Check if user got perfect score
-                const isPerfectScore = score === currentQuestions.length;
-                
-                if (isPerfectScore) {
-                    // Perfect score - show continue button and award 20 points
-                    continueButton.classList.remove('d-none');
-                    pointsEarned.textContent = "20";
-                    
-                    // Update user progress
-                    userProgress.eco_plan_progress = 100;
-                    userProgress.points += 20;
-                    
-                    // Update database with points
-                    const updateSuccess = await updateUserPoints(20);
-                    if (updateSuccess) {
-                        Swal.fire({
-                            title: 'Perfect Score!',
-                            text: '20 points have been added to your account!',
-                            icon: 'success',
-                            confirmButtonColor: '#7b1fa2'
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Error',
-                            text: 'Could not update your points. Please try again.',
-                            icon: 'error',
-                            confirmButtonColor: '#7b1fa2'
-                        });
-                    }
-                } else {
-                    // Not perfect score - hide continue button
-                    continueButton.classList.add('d-none');
-                    
-                    // Update user progress without unlocking next level
-                    userProgress.eco_plan_progress = Math.max(userProgress.eco_plan_progress, Math.floor((score / currentQuestions.length) * 100));
-                    
-                    // Update database with partial progress (no points)
-                    await updateUserPoints(0);
-                    
-                    Swal.fire({
-                        title: 'Challenge Completed!',
-                        html: `You scored ${score} out of ${currentQuestions.length}.<br>You've completed all difficulty levels!`,
-                        icon: 'info',
-                        confirmButtonColor: '#7b1fa2'
-                    });
-                }
-                
-                // Save user progress
-                saveUserProgress(userProgress);
-            });
-            
-            function calculateScore() {
-                score = 0;
-                
-                currentQuestions.forEach((question, index) => {
-                    const selectedOption = document.querySelector(`input[name="answer_${index}"]:checked`);
-                    
-                    if (selectedOption && parseInt(selectedOption.value) === question.correct) {
-                        score += 1;
-                    }
-                });
-                
-                scoreDisplay.textContent = `Score: ${score}`;
-            }
-            
-            // Function to save user progress (simulated)
-            function saveUserProgress(progress) {
-                // In a real app, this would make an API call to your backend
-                console.log("Saving user progress:", progress);
-                
-                // Simulate saving to database
-                Swal.fire({
-                    title: 'Progress Saved',
-                    text: 'Your progress has been saved successfully!',
-                    icon: 'success',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            }
-            
-            // Function to update user points in the database (simulated)
-            async function updateUserPoints(points) {
-                try {
-                    // This would be replaced with your actual API endpoint
-                    // Simulate API call with timeout
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    // In a real app, this would be the response from your server
-                    return true;
-                } catch (error) {
-                    console.error('Error updating user points:', error);
-                    return false;
-                }
-            }
-            
-            // Continue button handler
-            continueButton.addEventListener('click', async function() {
-                Swal.fire({
-                    title: 'All Levels Complete!',
-                    html: `
-                        <p>You've successfully completed all difficulty levels with perfect scores!</p>
-                        <div style="background-color: #f3e5f5; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
-                            <i class="fas fa-coins" style="color: #ffc107;"></i> 
-                            <strong>+20 points added to your account!</strong>
-                        </div>
-                        <p>You've mastered the Eco Plan Challenge!</p>
-                    `,
-                    icon: 'success',
-                    confirmButtonColor: '#7b1fa2',
-                    confirmButtonText: 'View Certificate'
-                }).then(() => {
-                    // In a real app, this would show a certificate
-                    Swal.fire({
-                        title: 'Certificate of Completion',
-                        html: `
-                            <div style="text-align: center; padding: 2rem; border: 2px solid #7b1fa2; border-radius: 12px;">
-                                <h2 style="color: #7b1fa2;">Certificate of Excellence</h2>
-                                <p>Awarded for mastering the Eco Plan Challenge</p>
-                                <p style="font-size: 1.2rem; margin-top: 1.5rem;">Perfect scores on all difficulty levels</p>
-                                <div style="margin-top: 2rem;">
-                                    <i class="fas fa-award" style="font-size: 3rem; color: #ffc107;"></i>
-                                </div>
-                            </div>
-                        `,
-                        confirmButtonColor: '#7b1fa2'
-                    });
-                });
-            });
-            
-            // Handle difficulty selection
-            difficultyButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    if (this.classList.contains('locked')) {
-                        Swal.fire({
-                            title: 'Level Locked',
-                            text: 'You need to complete the previous level with a perfect score first to unlock this difficulty.',
-                            icon: 'info',
-                            confirmButtonColor: '#7b1fa2'
-                        });
-                        return;
-                    }
-                    
-                    difficultyButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    const difficulty = this.dataset.difficulty;
-                    difficultyInput.value = difficulty;
-                    
-                    // In a real app, this would fetch new questions for the selected difficulty
-                    Swal.fire({
-                        title: 'Loading Questions',
-                        text: `Preparing ${difficulty} level questions...`,
-                        icon: 'info',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-                });
-            });
-            
-            // Back button handler - now goes directly to dashboard
-            backButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                clearInterval(timerInterval);
-                
-                // In a real app, this would save progress before leaving
-                saveUserProgress(userProgress);
-                
-                // Redirect to dashboard (in a real app)
-                window.location.href = 'dashboard.html';
-            });
-            
-            // Dashboard button handler
-            dashboardButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                // In a real app, this would save progress before leaving
-                saveUserProgress(userProgress);
-                
-                // Redirect to dashboard (in a real app)
-                window.location.href = 'dashboard.html';
-            });
-            
-            // Restart button handler
-            restartButton.addEventListener('click', function() {
-                completionScreen.classList.add('d-none');
-                triviaForm.classList.remove('d-none');
-                initGame();
+                navigateQuestions(1);
             });
         });
-    </script>
+
+        document.querySelectorAll('.prev-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                clearInterval(timerInterval);
+                navigateQuestions(-1);
+            });
+        });
+
+        document.querySelectorAll('.options').forEach(container => {
+            container.addEventListener('click', function (e) {
+                const option = e.target.closest('.option');
+                if (option) {
+                    container.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+
+                    const radio = option.querySelector('input[type="radio"]');
+                    if (radio) radio.checked = true;
+                }
+            });
+        });
+    }
+
+    function showQuestion(index) {
+        const progress = ((index + 1) / currentQuestions.length) * 100;
+        progressBar.style.width = `${progress}%`;
+        progressText.textContent = `Question ${index + 1} of ${currentQuestions.length}`;
+
+        timeLeft = 20;
+        timeLeftElement.textContent = timeLeft;
+        timerElement.classList.remove('warning', 'danger');
+        startTimer();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timeLeftElement.textContent = timeLeft;
+
+            if (timeLeft <= 5) timerElement.classList.add('warning');
+            if (timeLeft <= 3) timerElement.classList.add('danger');
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                timeUp();
+            }
+        }, 1000);
+    }
+
+    function timeUp() {
+        setTimeout(() => {
+            if (currentQuestionIndex < currentQuestions.length - 1) {
+                navigateQuestions(1);
+            } else {
+                triviaForm.dispatchEvent(new Event('submit'));
+            }
+        }, 1000);
+    }
+
+    function navigateQuestions(direction) {
+        const newIndex = currentQuestionIndex + direction;
+        if (newIndex >= 0 && newIndex < currentQuestions.length) {
+            document.querySelector(`.question-card[data-question="${currentQuestionIndex}"]`).classList.add('d-none');
+            document.querySelector(`.question-card[data-question="${newIndex}"]`).classList.remove('d-none');
+
+            currentQuestionIndex = newIndex;
+            showQuestion(currentQuestionIndex);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    triviaForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        clearInterval(timerInterval);
+
+        calculateScore();
+        triviaForm.classList.add('d-none');
+        completionScreen.classList.remove('d-none');
+        pointsEarned.textContent = score;
+
+        const isPerfectScore = score === currentQuestions.length;
+
+        if (isPerfectScore) {
+            continueButton.classList.remove('d-none');
+            pointsEarned.textContent = "20";
+
+            userProgress.eco_plan_progress = 100;
+            userProgress.points += 20;
+            await updateUserPoints(20);
+
+            Swal.fire({
+                title: 'Perfect Score!',
+                text: '20 points have been added to your account!',
+                icon: 'success',
+                confirmButtonColor: '#7b1fa2'
+            });
+        } else {
+            continueButton.classList.add('d-none');
+            userProgress.eco_plan_progress = Math.max(userProgress.eco_plan_progress, Math.floor((score / currentQuestions.length) * 100));
+            await updateUserPoints(0);
+
+            Swal.fire({
+                title: 'Challenge Completed!',
+                html: `You scored ${score} out of ${currentQuestions.length}.<br>You've completed all difficulty levels!`,
+                icon: 'info',
+                confirmButtonColor: '#7b1fa2'
+            });
+        }
+        saveUserProgress(userProgress);
+    });
+
+    function calculateScore() {
+        score = 0;
+        currentQuestions.forEach((question, index) => {
+            const selectedOption = document.querySelector(`input[name="answer_${index}"]:checked`);
+            if (selectedOption && parseInt(selectedOption.value) === question.correct) {
+                score++;
+            }
+        });
+        scoreDisplay.textContent = `Score: ${score}`;
+    }
+
+    function saveUserProgress(progress) {
+        console.log("Saving user progress:", progress);
+    }
+
+    async function updateUserPoints(points) {
+        try {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return true;
+        } catch (error) {
+            console.error('Error updating points:', error);
+            return false;
+        }
+    }
+
+    restartButton.addEventListener('click', function () {
+        completionScreen.classList.add('d-none');
+        triviaForm.classList.remove('d-none');
+        initGame();
+    });
+
+    // Start by fetching DB questions
+    fetchQuestions();
+});
+</script>
+
 </body>
 </html>

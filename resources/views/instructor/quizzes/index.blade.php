@@ -27,13 +27,17 @@
             <tr>
                 <td>{{ $loop->iteration }}</td>
                 <td>{{ $quiz->title }}</td>
-                <td>{{ $quiz->created_at->format('M d, Y') }}</td>
+                <td>{{ $quiz->created_at ? $quiz->created_at->format('M d, Y') : 'N/A' }}</td>
                 <td>
-                    <a href="{{ route('instructor.quizzes.edit', $quiz) }}" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></a>
-                    <form action="{{ route('instructor.quizzes.destroy', $quiz) }}" method="POST" class="d-inline">
+                    <a href="{{ route('instructor.quizzes.edit', $quiz->id) }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <form action="{{ route('instructor.quizzes.destroy', $quiz->id) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </form>
                 </td>
             </tr>
